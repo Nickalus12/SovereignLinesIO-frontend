@@ -1,13 +1,4 @@
 # Sovereign Lines
-
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="resources/images/SovereignLinesLogoDark.svg">
-    <source media="(prefers-color-scheme: light)" srcset="resources/images/SovereignLinesLogo.svg">
-    <img src="resources/images/SovereignLinesLogo.svg" alt="Sovereign Lines Logo" width="300">
-  </picture>
-</p>
-
 ![Prettier Check](https://github.com/sovereign-lines/sovereign-lines/actions/workflows/prettier.yml/badge.svg)
 [![Crowdin](https://badges.crowdin.net/sovereign-lines/localized.svg)](https://crowdin.com/project/sovereign-lines)
 
