@@ -31,7 +31,7 @@ This project is proprietary software. All rights reserved.
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/sovereign-lines/sovereign-lines.git
+   git clone https://github.com/Nickalus12/SovereignLinesIO-frontend.git
    cd sovereign-lines
    ```
 
