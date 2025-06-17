@@ -1,0 +1,97 @@
+.c-button {
+  background: linear-gradient(180deg, #4a5f3a 0%, #2d3b25 100%);
+  color: #fff;
+  cursor: pointer;
+  outline: none;
+  display: inline-block;
+  font-size: 16px;
+  border: 2px solid #2d3b25;
+  text-align: center;
+  padding: 0.8rem 1rem;
+  border-radius: 4px;
+  transition: var(--transition);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+
+  @media (min-width: 1024px) {
+    font-size: 18px;
+  }
+}
+
+.c-button:hover,
+.c-button:active,
+.c-button:focus {
+  background: linear-gradient(180deg, #5a6f4a 0%, #3a4a30 100%);
+  border-color: #3a4a30;
+  transition: var(--transition);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.c-button:disabled {
+  background: linear-gradient(180deg, #3a3a3a 0%, #2a2a2a 100%);
+  border-color: #2a2a2a;
+  opacity: 0.6;
+  cursor: not-allowed;
+  transition: var(--transition);
+  box-shadow: none;
+  transform: none;
+}
+
+.c-button--secondary {
+  background: linear-gradient(180deg, rgba(74, 95, 58, 0.2) 0%, rgba(45, 59, 37, 0.2) 100%);
+  color: #4a5f3a;
+  border-color: #4a5f3a;
+  backdrop-filter: blur(4px);
+}
+
+.c-button--secondary:hover,
+.c-button--secondary:active,
+.c-button--secondary:focus {
+  background: linear-gradient(180deg, rgba(74, 95, 58, 0.3) 0%, rgba(45, 59, 37, 0.3) 100%);
+  border-color: #5a6f4a;
+  color: #5a6f4a;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.c-button--block {
+  display: block;
+  width: 100%;
+}
+
+.c-button--blockDesktop {
+  display: block;
+  width: 100%;
+
+  @media (min-width: 1024px) {
+    width: auto;
+    margin: 0 auto;
+  }
+}
+
+/* Military-style active effect */
+.c-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s;
+}
+
+.c-button:hover::before {
+  left: 100%;
+}
+
+/* Subtle press effect */
+.c-button:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), inset 0 1px 2px rgba(0, 0, 0, 0.2);
+}

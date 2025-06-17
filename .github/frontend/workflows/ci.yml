@@ -1,0 +1,79 @@
+name: Frontend CI/CD
+
+on:
+  push:
+    branches: [main, develop, staging]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [20.x, 22.x]
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run linter
+        run: npm run lint
+      
+      - name: Run tests
+        run: npm test
+      
+      - name: Build application
+        run: npm run build
+      
+      - name: Upload build artifacts
+        if: github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: static/
+
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    needs: test
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-build
+          path: static/
+      
+      - name: Deploy to CDN
+        env:
+          CDN_KEY: ${{ secrets.CDN_DEPLOY_KEY }}
+        run: |
+          echo "Deploying to CDN..."
+          # Add your CDN deployment script here
+      
+      - name: Notify Discord
+        if: always()
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            curl -H "Content-Type: application/json" \
+              -d "{\"content\":\"✅ Frontend deployment successful!\"}" \
+              $DISCORD_WEBHOOK
+          else
+            curl -H "Content-Type: application/json" \
+              -d "{\"content\":\"❌ Frontend deployment failed!\"}" \
+              $DISCORD_WEBHOOK
+          fi

@@ -1,0 +1,779 @@
+<!doctype html>
+<html lang="en" class="h-full">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sovereign Lines - Conquer & Rule</title>
+    <link rel="manifest" href="../../resources/manifest.json" />
+
+    <!-- Critical CSS to prevent FOUC -->
+    <style>
+      .preload * {
+        -webkit-transition: none !important;
+        -moz-transition: none !important;
+        -ms-transition: none !important;
+        -o-transition: none !important;
+        transition: none !important;
+      }
+
+      html {
+        visibility: visible;
+        opacity: 1;
+      }
+
+      html.preload {
+        visibility: hidden;
+        opacity: 0;
+      }
+      
+
+      .bg-globe-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        z-index: -1;
+        background: #0a0f1a;
+        /* Optimize for smooth scrolling */
+        transform: translateZ(0);
+        -webkit-transform: translateZ(0);
+        will-change: transform;
+      }
+      
+      /* Ensure background container doesn't interfere with content on mobile */
+      @media (max-width: 768px) {
+        .bg-globe-container {
+          height: 100vh;
+          height: 100dvh; /* Dynamic viewport height for mobile browsers */
+          /* Fix position to prevent scroll jolt */
+          position: fixed;
+          will-change: auto;
+          /* Prevent any transform or position changes during scroll */
+          transform: none !important;
+          -webkit-transform: none !important;
+        }
+      }
+      
+      @keyframes infiniteScroll {
+        0% { transform: translateX(0) translateZ(0); }
+        100% { transform: translateX(-50%) translateZ(0); }
+      }
+      
+      @keyframes floatY {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-20px); }
+      }
+      
+      @keyframes parallaxDrift {
+        0% { transform: translateX(0) translateY(0); }
+        25% { transform: translateX(-10px) translateY(-5px); }
+        50% { transform: translateX(0) translateY(-10px); }
+        75% { transform: translateX(10px) translateY(-5px); }
+        100% { transform: translateX(0) translateY(0); }
+      }
+      
+      .world-map-layer {
+        position: absolute;
+        width: 200%;
+        height: 120%;
+        top: -10%;
+        left: 0;
+        background-image: url("/maps/WorldMapThumb.webp");
+        background-size: 50% auto;
+        background-repeat: repeat-x;
+        background-position: center;
+        animation: infiniteScroll 120s linear infinite;
+        filter: contrast(1.1) saturate(0.8) brightness(0.9);
+        opacity: 0.7;
+        /* Hardware acceleration and smooth scrolling */
+        will-change: transform;
+        transform: translateZ(0);
+        -webkit-transform: translateZ(0);
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+      }
+      
+      /* Mobile optimizations for background map */
+      @media (max-width: 768px) {
+        /* Hide the entire animated background on mobile to prevent stuttering */
+        .bg-globe-container {
+          display: none !important;
+        }
+        
+        /* Simple static background for mobile */
+        body {
+          background: #0a0f1a;
+        }
+      }
+      
+      /* Hide background when in game */
+      body.in-game .bg-globe-container {
+        display: none !important;
+      }
+      
+      .world-map-overlay {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(180deg, 
+          rgba(10, 15, 26, 0.8) 0%, 
+          rgba(10, 15, 26, 0.3) 20%,
+          rgba(10, 15, 26, 0.1) 50%,
+          rgba(10, 15, 26, 0.3) 80%,
+          rgba(10, 15, 26, 0.8) 100%);
+        pointer-events: none;
+      }
+      
+      .grid-overlay {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        opacity: 0.15;
+        background-image: 
+          repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 40px,
+            #4a5f3a 40px,
+            #4a5f3a 41px
+          ),
+          repeating-linear-gradient(
+            90deg,
+            transparent,
+            transparent 40px,
+            #4a5f3a 40px,
+            #4a5f3a 41px
+          );
+        animation: parallaxDrift 30s ease-in-out infinite;
+        will-change: transform;
+        transform: translateZ(0);
+      }
+      
+      /* Disable grid animation on mobile */
+      @media (max-width: 768px) {
+        .grid-overlay {
+          animation: none;
+        }
+      }
+      
+      /* Strategic points scattered across the map */
+      .strategic-points {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+      }
+      
+      /* Reduce strategic points on mobile for performance */
+      @media (max-width: 768px) {
+        .strategic-point:nth-child(n+6) {
+          display: none;
+        }
+      }
+      
+      @media (max-width: 480px) {
+        .strategic-point:nth-child(n+4) {
+          display: none;
+        }
+      }
+      
+      @keyframes pulse {
+        0%, 100% { 
+          opacity: 0.6; 
+          transform: scale(1); 
+          box-shadow: 0 0 10px currentColor;
+        }
+        50% { 
+          opacity: 1; 
+          transform: scale(1.2); 
+          box-shadow: 0 0 20px currentColor, 0 0 30px currentColor;
+        }
+      }
+      
+      .strategic-point {
+        position: absolute;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        animation: pulse 3s ease-in-out infinite;
+        will-change: transform, opacity;
+        transform: translateZ(0);
+      }
+      
+      /* Disable strategic point animations on mobile */
+      @media (max-width: 768px) {
+        .strategic-point {
+          animation: none;
+          opacity: 0.6;
+        }
+      }
+      
+      /* Random strategic points positions */
+      .strategic-point:nth-child(1) { top: 20%; left: 15%; color: #ff4444; animation-delay: 0s; }
+      .strategic-point:nth-child(2) { top: 35%; left: 30%; color: #44ff44; animation-delay: 0.5s; }
+      .strategic-point:nth-child(3) { top: 50%; left: 45%; color: #4444ff; animation-delay: 1s; }
+      .strategic-point:nth-child(4) { top: 25%; left: 60%; color: #ffff44; animation-delay: 1.5s; }
+      .strategic-point:nth-child(5) { top: 70%; left: 25%; color: #ff44ff; animation-delay: 2s; }
+      .strategic-point:nth-child(6) { top: 60%; left: 70%; color: #44ffff; animation-delay: 2.5s; }
+      .strategic-point:nth-child(7) { top: 40%; left: 80%; color: #ff4444; animation-delay: 0.3s; }
+      .strategic-point:nth-child(8) { top: 80%; left: 50%; color: #44ff44; animation-delay: 0.8s; }
+      .strategic-point:nth-child(9) { top: 15%; left: 85%; color: #4444ff; animation-delay: 1.3s; }
+      .strategic-point:nth-child(10) { top: 85%; left: 15%; color: #ffff44; animation-delay: 1.8s; }
+      
+      /* Depth layers */
+      .depth-layer-1 {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(ellipse at 20% 30%, rgba(74, 95, 58, 0.1) 0%, transparent 40%),
+                    radial-gradient(ellipse at 80% 70%, rgba(74, 95, 58, 0.1) 0%, transparent 40%);
+        animation: floatY 20s ease-in-out infinite;
+        will-change: transform;
+        transform: translateZ(0);
+      }
+      
+      .depth-layer-2 {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(ellipse at 70% 20%, rgba(58, 74, 95, 0.08) 0%, transparent 50%),
+                    radial-gradient(ellipse at 30% 80%, rgba(58, 74, 95, 0.08) 0%, transparent 50%);
+        animation: floatY 25s ease-in-out infinite reverse;
+        will-change: transform;
+        transform: translateZ(0);
+      }
+      
+      /* Disable depth layer animations on mobile */
+      @media (max-width: 768px) {
+        .depth-layer-1,
+        .depth-layer-2 {
+          animation: none;
+        }
+      }
+      
+      /* Scan effect */
+      @keyframes scanHorizontal {
+        0% { transform: translateX(-100%); opacity: 0; }
+        10% { opacity: 0.5; }
+        90% { opacity: 0.5; }
+        100% { transform: translateX(100%); opacity: 0; }
+      }
+      
+      .scan-line {
+        position: absolute;
+        width: 100%;
+        height: 1px;
+        background: linear-gradient(90deg, 
+          transparent, 
+          rgba(74, 95, 58, 0.8), 
+          #4a5f3a,
+          rgba(74, 95, 58, 0.8),
+          transparent);
+        top: 50%;
+        left: 0;
+        animation: scanHorizontal 12s infinite linear;
+        pointer-events: none;
+        box-shadow: 0 0 10px #4a5f3a;
+      }
+      
+      /* Hide scan line on mobile for performance */
+      @media (max-width: 768px) {
+        .scan-line {
+          display: none;
+        }
+      }
+      
+      .dark .bg-globe-container {
+        background: #000000;
+      }
+      
+      .dark .world-map-layer {
+        filter: contrast(1.2) saturate(0.5) brightness(0.6);
+      }
+      
+      .dark .world-map-overlay {
+        background: linear-gradient(180deg, 
+          rgba(0, 0, 0, 0.9) 0%, 
+          rgba(0, 0, 0, 0.4) 20%,
+          rgba(0, 0, 0, 0.2) 50%,
+          rgba(0, 0, 0, 0.4) 80%,
+          rgba(0, 0, 0, 0.9) 100%);
+      }
+
+      .left-gutter-ad {
+        position: fixed;
+        left: 0;
+        top: 200px;
+        /* Changed from top: 50% */
+        transform: none;
+        /* Removed translateY(-50%) since we don't need to center anymore */
+        z-index: 40;
+        width: 300px;
+        height: 600px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        pointer-events: auto;
+      }
+
+      .left-gutter-ad google-ad {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+
+      .right-gutter-ad {
+        position: fixed;
+        right: 0;
+        top: 200px;
+        /* Changed from top: 50% */
+        transform: none;
+        /* Removed translateY(-50%) since we don't need to center anymore */
+        z-index: 40;
+        width: 300px;
+        height: 600px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        pointer-events: auto;
+      }
+
+      .right-gutter-ad google-ad {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+
+      /* Media query to hide the gutter ad on smaller screens */
+      @media (max-width: 1280px) {
+        .left-gutter-ad {
+          display: none;
+        }
+
+        .right-gutter-ad {
+          display: none;
+        }
+      }
+
+      /* display:none if child has class parent-hidden since we can't use shadow DOM in Lit due to Tailwind */
+      .component-hideable:has(> .parent-hidden) {
+        display: none;
+      }
+    </style>
+
+    <!-- Immediate execution to prevent FOUC -->
+    <script>
+      document.documentElement.className = "preload";
+    </script>
+
+    <!-- Analytics -->
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=AW-16702609763"
+    ></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+
+      gtag("js", new Date());
+      gtag("config", "AW-16702609763");
+    </script>
+    <!-- Google tag (gtag.js) -->
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-WQGQQ8RDN4"
+    ></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
+
+      gtag("config", "G-WQGQQ8RDN4");
+    </script>
+  </head>
+
+  <body
+    class="h-full select-none font-sans min-h-screen bg-opacity-0 bg-cover bg-center bg-fixed transition-opacity duration-300 ease-in-out flex flex-col"
+  >
+    <header class="l-header">
+      <div class="l-header__content">
+        <!-- SOVEREIGN Pixelated Military Logo -->
+        <div class="l-header__logo" style="max-width: 100%; padding: 0 1rem; position: relative; margin: 0 auto;">
+          <style>
+            @keyframes glitch {
+              0%, 100% { text-shadow: 2px 2px 0 #2d3b25, -2px -2px 0 #1a1f15; }
+              25% { text-shadow: -2px 2px 0 #2d3b25, 2px -2px 0 #1a1f15; }
+              50% { text-shadow: 2px -2px 0 #2d3b25, -2px 2px 0 #1a1f15; }
+              75% { text-shadow: -2px -2px 0 #2d3b25, 2px 2px 0 #1a1f15; }
+            }
+            
+            .pixelated-text {
+              font-family: 'Courier New', monospace;
+              font-size: clamp(2rem, 8vw, 4.5rem);
+              font-weight: bold;
+              color: #4a5f3a;
+              text-transform: uppercase;
+              letter-spacing: clamp(0.1rem, 2vw, 0.5rem);
+              position: relative;
+              animation: glitch 4s infinite;
+              filter: contrast(1.5);
+              image-rendering: pixelated;
+              image-rendering: -moz-crisp-edges;
+              image-rendering: crisp-edges;
+              word-break: break-word;
+              line-height: 1;
+            }
+            
+            .pixelated-text::before {
+              content: 'SOVEREIGN LINES';
+              position: absolute;
+              top: 0;
+              left: 0;
+              width: 100%;
+              height: 100%;
+              color: #5a6f4a;
+              z-index: -1;
+              opacity: 0.7;
+              animation: glitch 4s infinite reverse;
+            }
+            
+            @media (max-width: 640px) {
+              .pixelated-text {
+                font-size: 2.5rem;
+                letter-spacing: 0.2rem;
+              }
+            }
+            
+            @media (max-width: 480px) {
+              .pixelated-text {
+                font-size: 2rem;
+                letter-spacing: 0.15rem;
+              }
+            }
+            
+            @media (max-width: 380px) {
+              .pixelated-text {
+                font-size: 1.75rem;
+                letter-spacing: 0.1rem;
+              }
+            }
+          </style>
+          
+          <div style="text-align: center;">
+            <!-- Main text -->
+            <div class="pixelated-text">SOVEREIGN LINES</div>
+          </div>
+        </div>
+        <div id="game-version" class="l-header__highlightText" style="color: #4a5f3a; font-weight: bold; font-size: 1.1em; text-transform: uppercase; letter-spacing: 2px; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);">
+          Loading version...
+        </div>
+      </div>
+    </header>
+    
+    <!-- Party Host Control Overlay -->
+    <div id="party-host-control-overlay" class="hidden fixed inset-0 pointer-events-none z-[9999]" style="display: none;">
+      <div class="absolute inset-0" style="border: 3px solid rgba(251, 146, 60, 0.5); border-radius: 8px; margin: 8px;">
+        <div class="absolute top-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-80 px-4 py-2 rounded-lg pointer-events-auto">
+          <div class="flex items-center gap-2 text-orange-400">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+            </svg>
+            <span class="font-bold text-lg">Host Controlled</span>
+          </div>
+          <div class="text-xs text-orange-300 text-center mt-1">The party host is selecting a game</div>
+        </div>
+      </div>
+    </div>
+    <div class="bg-globe-container" id="bgGlobeContainer" style="pointer-events: none;">
+      <!-- World map layer that scrolls infinitely -->
+      <div class="world-map-layer"></div>
+      
+      <!-- Grid overlay with parallax effect -->
+      <div class="grid-overlay"></div>
+      
+      <!-- Depth layers for atmosphere -->
+      <div class="depth-layer-1"></div>
+      <div class="depth-layer-2"></div>
+      
+      <!-- Strategic points scattered across the map -->
+      <div class="strategic-points">
+        <div class="strategic-point"></div>
+        <div class="strategic-point"></div>
+        <div class="strategic-point"></div>
+        <div class="strategic-point"></div>
+        <div class="strategic-point"></div>
+        <div class="strategic-point"></div>
+        <div class="strategic-point"></div>
+        <div class="strategic-point"></div>
+        <div class="strategic-point"></div>
+        <div class="strategic-point"></div>
+      </div>
+      
+      <!-- Gradient overlay for depth -->
+      <div class="world-map-overlay"></div>
+      
+      <!-- Scanning line effect -->
+      <div class="scan-line"></div>
+    </div>
+
+    <!-- Main container with responsive padding -->
+    <main class="flex justify-center flex-grow" style="position: relative; z-index: 1;">
+      <div class="container pt-12">
+        <o-button
+          id="login-discord"
+          title="Initializing..."
+          disable="true"
+          block
+        ></o-button>
+
+        <o-button
+          id="logout-discord"
+          title="Log out"
+          translationKey="main.log_out"
+          visible="false"
+          block
+        ></o-button>
+
+        <div class="container__row">
+          <flag-input class="w-[20%] md:w-[15%]"></flag-input>
+          <username-input class="relative w-full"></username-input>
+          <news-button
+            class="w-[20%] md:w-[15%] component-hideable"
+          ></news-button>
+        </div>
+        <div></div>
+        <div>
+          <public-lobby class="block"></public-lobby>
+        </div>
+        <div class="container__row container__row--equal">
+          <o-button
+            id="host-lobby-button"
+            title="Create Lobby"
+            translationKey="main.create_lobby"
+            block
+            secondary
+          ></o-button>
+          <o-button
+            id="join-private-lobby-button"
+            title="Join Lobby"
+            translationKey="main.join_lobby"
+            block
+            secondary
+          ></o-button>
+          <!-- <o-button
+            id="chat-button"
+            title="Chat Test"
+            block
+            secondary
+          ></o-button> -->
+        </div>
+
+        <o-button
+          id="single-player"
+          title="Single Player"
+          translationKey="main.single_player"
+          block
+        ></o-button>
+
+        <o-button
+          id="help-button"
+          title="Instructions"
+          translationKey="main.instructions"
+          block
+          secondary
+        ></o-button>
+        
+        <party-system class="block"></party-system>
+      </div>
+    </main>
+
+    <!-- User Setting -->
+    <button
+      id="settings-button"
+      title="Settings"
+      class="fixed bottom-4 right-4 z-50 rounded-full p-2 shadow-lg transition-colors duration-300 flex items-center justify-center"
+      style="width: 60px; height: 60px; background-color: #0075ff"
+    >
+      <img
+        src="../../resources/images/SettingIconWhite.svg"
+        alt="Settings"
+        style="width: 48px; height: 48px"
+      />
+    </button>
+    
+    <style>
+      /* Make settings button smaller on mobile */
+      @media (max-width: 640px) {
+        #settings-button {
+          width: 50px !important;
+          height: 50px !important;
+          bottom: 1rem !important;
+          right: 1rem !important;
+        }
+        #settings-button img {
+          width: 36px !important;
+          height: 36px !important;
+        }
+      }
+    </style>
+
+    <!-- Game components -->
+    <div id="customMenu" class="mt-4 sm:mt-6 lg:mt-8">
+      <ul></ul>
+    </div>
+    <div id="app"></div>
+    <div id="radialMenu" class="radial-menu"></div>
+    <div class="flex gap-2 fixed right-[10px] top-[10px] z-50 flex-col">
+      <options-menu></options-menu>
+      <replay-panel></replay-panel>
+      <player-info-overlay></player-info-overlay>
+    </div>
+    <div
+      class="fixed bottom-[30px] sm:bottom-auto sm:top-[20px] z-50 mx-auto max-w-max inset-x-0 items-center"
+    >
+      <heads-up-message></heads-up-message>
+    </div>
+    <div class="fixed left-[10px] top-[10px] z-50 w-36 lg:w-48 items-center">
+      <player-team-label></player-team-label>
+    </div>
+
+    <div
+      class="bottom-0 w-full flex-col-reverse sm:flex-row z-50"
+      style="position: fixed; pointer-events: none"
+    >
+      <div
+        class="w-full sm:w-2/3 sm:fixed sm:right-0 sm:bottom-0 sm:flex justify-end"
+        style="pointer-events: none"
+      >
+        <chat-display></chat-display>
+        <events-display></events-display>
+      </div>
+      <div class="w-full sm:w-1/3 md:max-w-72" style="pointer-events: auto">
+        <control-panel></control-panel>
+      </div>
+    </div>
+
+    <!-- Footer section -->
+    <footer class="l-footer">
+      <div class="l-footer__content">
+        <div class="l-footer__col">
+          <a
+            href="https://youtu.be/jvHEvbko3uw?si=znspkP84P76B1w5I"
+            data-i18n="main.how_to_play"
+            class="t-link"
+            target="_blank"
+          >
+            How to Play
+          </a>
+          <a
+            href="https://sovereign.miraheze.org/wiki/Main_Page"
+            data-i18n="main.wiki"
+            class="t-link"
+            target="_blank"
+          >
+            Wiki
+          </a>
+          <a
+            target="_blank"
+            href="https://discord.gg/rb9m657yhX"
+            class="t-link"
+          >
+            <span data-i18n="main.join_discord"> Join the Discord! </span>
+          </a>
+        </div>
+        <div class="l-footer__col t-text-white">
+          <a
+            href="https://github.com/"
+            class="t-link inline-flex items-center space-x-2"
+            target="_blank"
+          >
+            ©2025 Sovereign Lines™
+            <img
+              src="../../resources/icons/github-mark-white.svg"
+              alt="GitHub"
+              width="20"
+              height="20"
+              class="ml-2 mr-4"
+            />
+          </a>
+          <a href="/privacy-policy.html" class="t-link" target="_blank">
+            Privacy Policy
+          </a>
+          <a href="/terms-of-service.html" class="t-link" target="_blank">
+            Terms of Service
+          </a>
+          <p style="text-align: center">
+            <a
+              href="https://www.playwire.com/contact-direct-sales"
+              data-i18n="main.advertise"
+              class="t-link"
+              target="_blank"
+              rel="noopener"
+              >Advertise</a
+            >
+          </p>
+        </div>
+      </div>
+    </footer>
+    <!-- Game modals and overlays -->
+    <single-player-modal></single-player-modal>
+    <host-lobby-modal></host-lobby-modal>
+    <join-private-lobby-modal></join-private-lobby-modal>
+    <emoji-table></emoji-table>
+    <leader-board></leader-board>
+    <build-menu></build-menu>
+    <win-modal></win-modal>
+    <game-starting-modal></game-starting-modal>
+    <top-bar></top-bar>
+    <team-stats></team-stats>
+    <player-panel></player-panel>
+    <help-modal></help-modal>
+    <chat-modal></chat-modal>
+    <user-setting></user-setting>
+    <multi-tab-modal></multi-tab-modal>
+    <unit-info-modal></unit-info-modal>
+    <news-modal></news-modal>
+    <left-in-game-ad></left-in-game-ad>
+    <div
+      id="language-modal"
+      class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex justify-center items-center"
+    >
+      <div class="bg-white rounded-lg shadow-lg p-6 w-96 max-w-full">
+        <h2 class="text-xl font-semibold mb-4">Select Language</h2>
+        <div
+          id="language-list"
+          class="space-y-2 max-h-80 overflow-y-auto"
+        ></div>
+        <button
+          class="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded"
+          onclick="document.getElementById('language-modal').classList.add('hidden')"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+    <!-- Scripts -->
+    <script>
+      // Remove preload class after everything is loaded
+      window.addEventListener("load", function () {
+        requestAnimationFrame(() => {
+          document.documentElement.classList.remove("preload");
+        });
+      });
+      
+    </script>
+
+    <!-- Analytics -->
+    <script
+      defer
+      src="https://static.cloudflareinsights.com/beacon.min.js"
+      data-cf-beacon='{"token": "03d93e6fefb349c28ee69b408fa25a13"}'
+    ></script>
+  </body>
+</html>
