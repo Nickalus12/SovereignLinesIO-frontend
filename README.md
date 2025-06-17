@@ -135,7 +135,7 @@ How to help?
 
 ### Project Governance
 
-- The project maintainer ([evan](https://github.com/evanpelle)) has final authority on all code changes and design decisions
+- The project maintainer ([Nickalus](https://github.com/Nickalus12)) has final authority on all code changes and design decisions
 - All pull requests require maintainer approval before merging
 - The maintainer reserves the right to reject contributions that don't align with the project's vision or quality standards
 
