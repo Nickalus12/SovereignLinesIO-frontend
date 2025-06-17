@@ -32,7 +32,7 @@ This project is proprietary software. All rights reserved.
 
    ```bash
    git clone https://github.com/Nickalus12/SovereignLinesIO-frontend.git
-   cd sovereign-lines
+   cd SovereignLinesIO-frontend
    ```
 
 2. **Install dependencies**
