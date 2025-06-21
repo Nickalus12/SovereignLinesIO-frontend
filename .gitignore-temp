@@ -1,0 +1,56 @@
+# Git management
+/.gitman/
+/git-scripts/
+
+# Frontend-specific files
+/.github/frontend/
+
+# Secrets
+.env*
+!.env.example
+tunnel-creds.json
+cloudflared-config.yml
+/certs/
+*.pem
+*.key
+
+# Dependencies
+node_modules/
+/static/
+/out/
+/dist/
+
+# Temporary files
+*.log
+*.tmp
+*.temp
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Testing
+/coverage/
+/.nyc_output
+
+# Build files
+/build/
+/lib/
+
+# Documentation
+/docs/frontend/
+
+# Monitoring and logs
+/logs/
+*.pid
+*.seed
+*.pid.lock

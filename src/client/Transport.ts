@@ -287,12 +287,20 @@ export class Transport {
   ) {
     this.startPing();
     this.killExistingSocket();
-    const wsHost = window.location.host;
-    const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    // Check for custom server endpoint in localStorage or use current host
+    const customServerEndpoint = localStorage.getItem('gameServerEndpoint');
+    const wsHost = customServerEndpoint || window.location.host;
+    const wsProtocol = customServerEndpoint?.startsWith('wss://') ? 'wss:' : 
+                      customServerEndpoint?.startsWith('ws://') ? 'ws:' :
+                      window.location.protocol === "https:" ? "wss:" : "ws:";
     const workerPath = this.lobbyConfig.serverConfig.workerPath(
       this.lobbyConfig.gameID,
     );
-    this.socket = new WebSocket(`${wsProtocol}//${wsHost}/${workerPath}`);
+    // If custom endpoint includes protocol, use it directly
+    const wsUrl = customServerEndpoint && (customServerEndpoint.startsWith('ws://') || customServerEndpoint.startsWith('wss://'))
+      ? `${customServerEndpoint}/${workerPath}`
+      : `${wsProtocol}//${wsHost}/${workerPath}`;
+    this.socket = new WebSocket(wsUrl);
     this.onconnect = onconnect;
     this.onmessage = onmessage;
     this.socket.onopen = () => {
@@ -359,9 +367,9 @@ export class Transport {
     );
   }
 
-  leaveGame(saveFullGame: boolean = false) {
+  async leaveGame(saveFullGame: boolean = false) {
     if (this.isLocal) {
-      this.localServer.endGame(saveFullGame);
+      await this.localServer.endGame(saveFullGame);
       return;
     }
     this.stopPing();

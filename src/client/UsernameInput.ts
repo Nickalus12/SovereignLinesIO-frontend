@@ -43,12 +43,12 @@ export class UsernameInput extends LitElement {
         @change=${this.handleChange}
         placeholder="${translateText("username.enter_username")}"
         maxlength="${MAX_USERNAME_LENGTH}"
-        class="w-full px-4 py-2 border border-gray-300 rounded-xl shadow-sm text-2xl text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:border-gray-300/60 dark:bg-gray-700 dark:text-white"
+        class="w-full px-4 py-2 text-2xl text-center focus:outline-none military-glass-input"
       />
       ${this.validationError
         ? html`<div
             id="username-validation-error"
-            class="absolute z-10 w-full mt-2 px-3 py-1 text-lg border rounded bg-white text-red-600 border-red-600 dark:bg-gray-700 dark:text-red-300 dark:border-red-300"
+            class="absolute z-10 w-full mt-2 px-3 py-1 text-lg military-glass-error"
           >
             ${this.validationError}
           </div>`
@@ -56,7 +56,7 @@ export class UsernameInput extends LitElement {
     `;
   }
 
-  private handleChange(e: Event) {
+  private async handleChange(e: Event) {
     const input = e.target as HTMLInputElement;
     this.username = input.value.trim();
     const result = validateUsername(this.username);
@@ -64,6 +64,21 @@ export class UsernameInput extends LitElement {
     if (result.isValid) {
       this.storeUsername(this.username);
       this.validationError = "";
+      
+      // Auto-create guest account if not already authenticated
+      try {
+        const { authService } = await import("./auth/AuthService");
+        const isAuthenticated = await authService.isAuthenticated();
+        const currentUser = await authService.getCurrentUser();
+        
+        // Only create guest if not authenticated or if username changed
+        if (!isAuthenticated || (currentUser && currentUser.username !== this.username)) {
+          await authService.loginAsGuest(this.username);
+          console.log('Guest account created/updated for:', this.username);
+        }
+      } catch (error) {
+        console.warn('Could not auto-create guest account:', error);
+      }
     } else {
       this.validationError = result.error ?? "";
     }

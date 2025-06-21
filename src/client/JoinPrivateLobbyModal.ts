@@ -23,7 +23,7 @@ export class JoinPrivateLobbyModal extends LitElement {
   render() {
     return html`
       <o-modal title=${translateText("private_lobby.title")}>
-        <div class="lobby-id-box">
+        <div class="join-lobby-id-box">
           <input
             type="text"
             id="lobbyIdInput"

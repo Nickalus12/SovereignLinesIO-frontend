@@ -3,6 +3,7 @@ import atomBombSprite from "../../../resources/sprites/atombomb.png";
 import hydrogenBombSprite from "../../../resources/sprites/hydrogenbomb.png";
 import mirvSprite from "../../../resources/sprites/mirv2.png";
 import samMissileSprite from "../../../resources/sprites/samMissile.png";
+import supplyTruckSprite from "../../../resources/sprites/supplytruck.png";
 import tradeShipSprite from "../../../resources/sprites/tradeship.png";
 import transportShipSprite from "../../../resources/sprites/transportship.png";
 import warshipSprite from "../../../resources/sprites/warship.png";
@@ -18,6 +19,7 @@ const SPRITE_CONFIG: Partial<Record<UnitType, string>> = {
   [UnitType.HydrogenBomb]: hydrogenBombSprite,
   [UnitType.TradeShip]: tradeShipSprite,
   [UnitType.MIRV]: mirvSprite,
+  [UnitType.SupplyTruck]: supplyTruckSprite,
 };
 
 const spriteMap: Map<UnitType, ImageBitmap> = new Map();

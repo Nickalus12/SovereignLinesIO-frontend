@@ -164,7 +164,9 @@ export class LocalServer {
     }
     if (this.replayTurns.length > 0) {
       if (this.turns.length >= this.replayTurns.length) {
-        this.endGame();
+        this.endGame().catch((error) => {
+          console.error("Error ending game:", error);
+        });
         return;
       }
       this.intents = this.replayTurns[this.turns.length].intents;
@@ -181,7 +183,7 @@ export class LocalServer {
     });
   }
 
-  public endGame(saveFullGame: boolean = false) {
+  public async endGame(saveFullGame: boolean = false) {
     if (this.isEnded) {
       console.log("local server already ended");
       return;
@@ -194,7 +196,7 @@ export class LocalServer {
     }
     const players: PlayerRecord[] = [
       {
-        persistentID: getPersistentID(),
+        persistentID: await getPersistentID(),
         username: this.lobbyConfig.playerName,
         clientID: this.lobbyConfig.clientID,
         stats: this.allPlayersStats[this.lobbyConfig.clientID],

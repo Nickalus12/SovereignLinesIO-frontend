@@ -185,8 +185,8 @@ export class ControlPanel extends LitElement implements Layer {
         input[type="range"]::-webkit-slider-thumb {
           -webkit-appearance: none;
           appearance: none;
-          width: 16px;
-          height: 16px;
+          width: 12px;
+          height: 12px;
           background: white;
           border-width: 2px;
           border-style: solid;
@@ -194,8 +194,8 @@ export class ControlPanel extends LitElement implements Layer {
           cursor: pointer;
         }
         input[type="range"]::-moz-range-thumb {
-          width: 16px;
-          height: 16px;
+          width: 12px;
+          height: 12px;
           background: white;
           border-width: 2px;
           border-style: solid;
@@ -217,90 +217,106 @@ export class ControlPanel extends LitElement implements Layer {
       </style>
       <div
         class="${this._isVisible
-          ? "w-full text-xs sm:text-sm lg:text-m lg:w-72 bg-gray-800/70 p-2 pr-3 lg:p-4 shadow-lg lg:rounded-lg backdrop-blur"
+          ? "w-full lg:w-72 sg-panel p-2 lg:p-3 text-xs"
           : "hidden"}"
+        style="position: fixed; bottom: 10px; left: 10px; z-index: 30;"
         @contextmenu=${(e) => e.preventDefault()}
       >
-        <div class="hidden lg:block bg-black/30 text-white mb-4 p-2 rounded">
-          <div class="flex justify-between mb-1">
-            <span class="font-bold"
-              >${translateText("control_panel.pop")}:</span
-            >
-            <span translate="no"
-              >${renderTroops(this._population)} /
-              ${renderTroops(this._maxPopulation)}
-              <span
-                class="${this._popRateIsIncreasing
-                  ? "text-green-500"
-                  : "text-yellow-500"}"
-                translate="no"
-                >(+${renderTroops(this.popRate)})</span
-              ></span
-            >
-          </div>
-          <div class="flex justify-between">
-            <span class="font-bold"
-              >${translateText("control_panel.gold")}:</span
-            >
-            <span translate="no"
-              >${renderNumber(this._gold)}
-              (+${renderNumber(this._goldPerSecond)})</span
-            >
+        <!-- Resource Summary (Desktop only) - More compact -->
+        <div class="hidden lg:block sg-card p-2 mb-3">
+          <div class="grid grid-cols-2 gap-2">
+            <div class="text-center">
+              <div class="flex items-center justify-center gap-1">
+                <span class="text-sm">👥</span>
+                <div class="sg-text-primary font-bold text-sm">
+                  ${renderTroops(this._population)}
+                </div>
+              </div>
+              <div class="text-xs ${this._popRateIsIncreasing ? "text-green-400" : "text-yellow-400"}">
+                +${renderTroops(this.popRate)}/s
+              </div>
+            </div>
+            <div class="text-center">
+              <div class="flex items-center justify-center gap-1">
+                <span class="text-sm">💰</span>
+                <div class="sg-text-primary font-bold text-sm">
+                  ${renderNumber(this._gold)}
+                </div>
+              </div>
+              <div class="text-xs text-green-400">
+                +${renderNumber(this._goldPerSecond)}/s
+              </div>
+            </div>
           </div>
         </div>
 
-        <div class="relative mb-2 sm:mb-3 lg:mb-4">
-          <label class="block text-white mb-1 text-xs sm:text-sm" translate="no"
-            >${translateText("control_panel.troops")}:
-            <span translate="no">${renderTroops(this._troops)}</span> |
-            ${translateText("control_panel.workers")}:
-            <span translate="no">${renderTroops(this._workers)}</span></label
-          >
-          <div class="relative h-6 sm:h-8">
+        <!-- Troop/Worker Ratio Control - Compact but informative -->
+        <div class="sg-card p-2 mb-2">
+          <div class="flex items-center justify-between mb-1">
+            <div class="flex items-center gap-2">
+              <span class="text-sm">⚔️</span>
+              <span class="sg-text-primary font-medium text-sm">${translateText("control_panel.troops")}</span>
+            </div>
+            <div class="text-right">
+              <div class="flex items-center gap-2 text-xs">
+                <span class="sg-text-muted">⚔️ ${renderTroops(this._troops)}</span>
+                <span class="sg-text-muted">🔨 ${renderTroops(this._workers)}</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="relative h-5 mb-1">
             <!-- Background track -->
+            <div class="absolute left-0 right-0 top-1.5 h-1.5 bg-black/30 rounded-full"></div>
+            <!-- Target track (darker) -->
             <div
-              class="absolute left-0 right-0 top-2 sm:top-3 h-1.5 sm:h-2 bg-white/20 rounded"
+              class="absolute left-0 top-1.5 h-1.5 bg-gradient-to-r from-blue-600 to-blue-500 rounded-full transition-all duration-300 opacity-60"
+              style="width: ${this.targetTroopRatio * 100}%"
             ></div>
-            <!-- Fill track -->
+            <!-- Current track (brighter) -->
             <div
-              class="absolute left-0 top-2 sm:top-3 h-1.5 sm:h-2 bg-blue-500/60 rounded transition-all duration-300"
+              class="absolute left-0 top-1.5 h-1.5 bg-gradient-to-r from-blue-400 to-blue-300 rounded-full transition-all duration-500"
               style="width: ${this.currentTroopRatio * 100}%"
             ></div>
-            <!-- Range input - exactly overlaying the visual elements -->
+            <!-- Range input -->
             <input
               type="range"
               min="1"
               max="100"
               .value=${(this.targetTroopRatio * 100).toString()}
               @input=${(e: Event) => {
-                this.targetTroopRatio =
-                  parseInt((e.target as HTMLInputElement).value) / 100;
+                this.targetTroopRatio = parseInt((e.target as HTMLInputElement).value) / 100;
                 this.onTroopChange(this.targetTroopRatio);
               }}
-              class="absolute left-0 right-0 top-2 m-0 h-4 cursor-pointer targetTroopRatio"
+              class="absolute left-0 right-0 top-0 m-0 h-5 cursor-pointer targetTroopRatio opacity-0"
             />
+          </div>
+          <div class="text-center text-xs sg-text-muted">
+            ${(this.targetTroopRatio * 100).toFixed(0)}% troops / ${(100 - this.targetTroopRatio * 100).toFixed(0)}% workers
           </div>
         </div>
 
-        <div class="relative mb-0 lg:mb-4">
-          <label class="block text-white mb-1 text-xs sm:text-sm" translate="no"
-            >${translateText("control_panel.attack_ratio")}:
-            ${(this.attackRatio * 100).toFixed(0)}%
-            (${renderTroops(
-              (this.game?.myPlayer()?.troops() ?? 0) * this.attackRatio,
-            )})</label
-          >
-          <div class="relative h-6 sm:h-8">
+        <!-- Attack Ratio Control - Compact but clear -->
+        <div class="sg-card p-2">
+          <div class="flex items-center justify-between mb-1">
+            <div class="flex items-center gap-2">
+              <span class="text-sm">🗡️</span>
+              <span class="sg-text-primary font-medium text-sm">${translateText("control_panel.attack_ratio")}</span>
+            </div>
+            <div class="text-right">
+              <div class="sg-text-primary font-bold text-xs">${renderTroops((this.game?.myPlayer()?.troops() ?? 0) * this.attackRatio)}</div>
+            </div>
+          </div>
+          
+          <div class="relative h-5 mb-1">
             <!-- Background track -->
-            <div
-              class="absolute left-0 right-0 top-2 sm:top-3 h-1.5 sm:h-2 bg-white/20 rounded"
-            ></div>
+            <div class="absolute left-0 right-0 top-1.5 h-1.5 bg-black/30 rounded-full"></div>
             <!-- Fill track -->
             <div
-              class="absolute left-0 top-2 sm:top-3 h-1.5 sm:h-2 bg-red-500/60 rounded transition-all duration-300"
+              class="absolute left-0 top-1.5 h-1.5 bg-gradient-to-r from-red-500 to-orange-400 rounded-full transition-all duration-300"
               style="width: ${this.attackRatio * 100}%"
             ></div>
-            <!-- Range input - exactly overlaying the visual elements -->
+            <!-- Range input -->
             <input
               id="attack-ratio"
               type="range"
@@ -308,12 +324,14 @@ export class ControlPanel extends LitElement implements Layer {
               max="100"
               .value=${(this.attackRatio * 100).toString()}
               @input=${(e: Event) => {
-                this.attackRatio =
-                  parseInt((e.target as HTMLInputElement).value) / 100;
+                this.attackRatio = parseInt((e.target as HTMLInputElement).value) / 100;
                 this.onAttackRatioChange(this.attackRatio);
               }}
-              class="absolute left-0 right-0 top-2 m-0 h-4 cursor-pointer attackRatio"
+              class="absolute left-0 right-0 top-0 m-0 h-5 cursor-pointer attackRatio opacity-0"
             />
+          </div>
+          <div class="text-center text-xs sg-text-muted">
+            Attack with ${(this.attackRatio * 100).toFixed(0)}%
           </div>
         </div>
       </div>

@@ -6,6 +6,8 @@ import { GameID, GameInfo } from "../core/Schemas";
 import { generateID } from "../core/Util";
 import { JoinLobbyEvent } from "./Main";
 import { getMapsImage } from "./utilities/Maps";
+import { authService } from "./auth/AuthService";
+import { checkTermsAcceptance } from "./auth/TermsAcceptanceModal";
 
 @customElement("public-lobby")
 export class PublicLobby extends LitElement {
@@ -100,6 +102,10 @@ export class PublicLobby extends LitElement {
         if (!l?.gameConfig) return false;
         const start = this.lobbyIDToStart.get(l.gameID) ?? 0;
         const timeRemaining = Math.max(0, Math.floor((start - Date.now()) / 1000));
+        // Keep showing the selected lobby even if it's about to start
+        if (this.currLobby?.gameID === l.gameID && this.isLobbyHighlighted) {
+          return true;
+        }
         return timeRemaining > 0; // Only show lobbies that haven't started
       });
 
@@ -111,22 +117,49 @@ export class PublicLobby extends LitElement {
     let slot1: GameInfo | null = null;
     let slot2: GameInfo | null = null;
 
-    // Prioritize showing one FFA and one Team game
-    if (ffaLobbies.length > 0 && teamLobbies.length > 0) {
-      slot1 = ffaLobbies[0];
-      slot2 = teamLobbies[0];
-    } else if (ffaLobbies.length >= 2) {
-      slot1 = ffaLobbies[0];
-      slot2 = ffaLobbies[1];
-    } else if (teamLobbies.length >= 2) {
-      slot1 = teamLobbies[0];
-      slot2 = teamLobbies[1];
-    } else if (ffaLobbies.length === 1) {
-      slot1 = ffaLobbies[0];
-      slot2 = teamLobbies[0] || null;
-    } else if (teamLobbies.length === 1) {
-      slot1 = teamLobbies[0];
-      slot2 = ffaLobbies[0] || null;
+    // If we have a selected lobby, ensure it stays in its slot
+    if (this.currLobby && this.isLobbyHighlighted) {
+      const selectedLobby = validLobbies.find(l => l.gameID === this.currLobby!.gameID);
+      if (selectedLobby) {
+        // Determine which slot the selected lobby should be in based on existing logic
+        const isSelectedFFA = selectedLobby.gameConfig!.gameMode === GameMode.FFA;
+        const otherFFALobbies = ffaLobbies.filter(l => l.gameID !== selectedLobby.gameID);
+        const otherTeamLobbies = teamLobbies.filter(l => l.gameID !== selectedLobby.gameID);
+        
+        // Try to maintain the pattern: one FFA and one Team if possible
+        if (isSelectedFFA) {
+          slot1 = selectedLobby;
+          slot2 = otherTeamLobbies[0] || otherFFALobbies[0] || null;
+        } else {
+          // Selected is Team mode
+          if (otherFFALobbies.length > 0) {
+            slot1 = otherFFALobbies[0];
+            slot2 = selectedLobby;
+          } else {
+            slot1 = selectedLobby;
+            slot2 = otherTeamLobbies[0] || null;
+          }
+        }
+      }
+    } else {
+      // No selected lobby, use original logic
+      // Prioritize showing one FFA and one Team game
+      if (ffaLobbies.length > 0 && teamLobbies.length > 0) {
+        slot1 = ffaLobbies[0];
+        slot2 = teamLobbies[0];
+      } else if (ffaLobbies.length >= 2) {
+        slot1 = ffaLobbies[0];
+        slot2 = ffaLobbies[1];
+      } else if (teamLobbies.length >= 2) {
+        slot1 = teamLobbies[0];
+        slot2 = teamLobbies[1];
+      } else if (ffaLobbies.length === 1) {
+        slot1 = ffaLobbies[0];
+        slot2 = teamLobbies[0] || null;
+      } else if (teamLobbies.length === 1) {
+        slot1 = teamLobbies[0];
+        slot2 = ffaLobbies[0] || null;
+      }
     }
 
     // Always show 2 game slots
@@ -265,7 +298,7 @@ export class PublicLobby extends LitElement {
     this.currLobby = null;
   }
 
-  private lobbyClicked(lobby: GameInfo) {
+  private async lobbyClicked(lobby: GameInfo) {
     // Check if user is in party as non-host
     const partySystem = document.querySelector('party-system') as any;
     if (partySystem?.isInPartyAsNonHost && partySystem.isInPartyAsNonHost()) {
@@ -299,36 +332,17 @@ export class PublicLobby extends LitElement {
     }
 
     if (this.currLobby === null) {
-      this.isLobbyHighlighted = true;
-      this.currLobby = lobby;
-      
-      // If user is party host, dispatch event about selected lobby
-      if (partySystem?.isHost && partySystem.isHost()) {
-        const mapName = lobby.gameConfig?.gameMap || 'Unknown';
-        window.dispatchEvent(new CustomEvent("host-selected-lobby", {
-          detail: {
-            gameID: lobby.gameID,
-            mapName: mapName
-          },
-          bubbles: true,
-          composed: true
-        }));
+      // Check if user is logged in and needs to accept terms before joining
+      const user = await authService.getCurrentUser();
+      if (user) {
+        await checkTermsAcceptance(() => {
+          // Proceed with joining after TOS acceptance
+          this.proceedWithJoin(lobby, partySystem);
+        });
+      } else {
+        // Guest users can join without TOS
+        this.proceedWithJoin(lobby, partySystem);
       }
-      
-      // Get party info if available
-      const partyInfo = partySystem?.getPartyInfo ? partySystem.getPartyInfo() : null;
-      
-      this.dispatchEvent(
-        new CustomEvent("join-lobby", {
-          detail: {
-            gameID: lobby.gameID,
-            clientID: generateID(),
-            partyId: partyInfo?.partyId,
-          } as JoinLobbyEvent,
-          bubbles: true,
-          composed: true,
-        }),
-      );
     } else {
       this.dispatchEvent(
         new CustomEvent("leave-lobby", {
@@ -339,5 +353,38 @@ export class PublicLobby extends LitElement {
       );
       this.leaveLobby();
     }
+  }
+
+  private proceedWithJoin(lobby: GameInfo, partySystem: any) {
+    this.isLobbyHighlighted = true;
+    this.currLobby = lobby;
+    
+    // If user is party host, dispatch event about selected lobby
+    if (partySystem?.isHost && partySystem.isHost()) {
+      const mapName = lobby.gameConfig?.gameMap || 'Unknown';
+      window.dispatchEvent(new CustomEvent("host-selected-lobby", {
+        detail: {
+          gameID: lobby.gameID,
+          mapName: mapName
+        },
+        bubbles: true,
+        composed: true
+      }));
+    }
+    
+    // Get party info if available
+    const partyInfo = partySystem?.getPartyInfo ? partySystem.getPartyInfo() : null;
+    
+    this.dispatchEvent(
+      new CustomEvent("join-lobby", {
+        detail: {
+          gameID: lobby.gameID,
+          clientID: generateID(),
+          partyId: partyInfo?.partyId,
+        } as JoinLobbyEvent,
+        bubbles: true,
+        composed: true,
+      }),
+    );
   }
 }

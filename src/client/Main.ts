@@ -11,8 +11,6 @@ import { DarkModeButton } from "./DarkModeButton";
 import "./FlagInput";
 import { FlagInput } from "./FlagInput";
 import { GameStartingModal } from "./GameStartingModal";
-import "./GoogleAdElement";
-import GoogleAdElement from "./GoogleAdElement";
 import { HelpModal } from "./HelpModal";
 import { HostLobbyModal as HostPrivateLobbyModal } from "./HostLobbyModal";
 import { JoinPrivateLobbyModal } from "./JoinPrivateLobbyModal";
@@ -29,10 +27,25 @@ import "./components/NewsButton";
 import { NewsButton } from "./components/NewsButton";
 import "./PartySystem";
 import { PartySystem } from "./PartySystem";
+import { SubscriptionButton } from "./components/SubscriptionButtonSimple";
 import "./components/baseComponents/Button";
 import { OButton } from "./components/baseComponents/Button";
 import "./components/baseComponents/Modal";
 import { discordLogin, getUserMe, isLoggedIn, logOut } from "./jwt";
+import "./auth/LoginModal";
+import { LoginModal } from "./auth/LoginModal";
+import "./auth/RegisterModal";
+import { RegisterModal } from "./auth/RegisterModal";
+import "./auth/ProfileDropdown";
+import { ProfileDropdown } from "./auth/ProfileDropdown";
+import "./auth/AccountSettingsModal";
+import { AccountSettingsModal } from "./auth/AccountSettingsModal";
+import "./auth/PasswordResetModal";
+import { PasswordResetModal } from "./auth/PasswordResetModal";
+import { authService } from "./auth/AuthService";
+import { statsTracker } from "./auth/StatsTracker";
+import "./auth/TermsAcceptanceModal";
+import { TermsAcceptanceModal, checkTermsAcceptance } from "./auth/TermsAcceptanceModal";
 import "./styles.css";
 import { UIManager } from "./graphics/UIManager";
 
@@ -48,6 +61,18 @@ export interface JoinLobbyEvent {
   partyId?: string;
 }
 
+// Utility function to set custom game server endpoint
+(window as any).setGameServerEndpoint = (endpoint: string | null) => {
+  if (endpoint === null) {
+    localStorage.removeItem('gameServerEndpoint');
+    console.log('Game server endpoint reset to use current host');
+  } else {
+    localStorage.setItem('gameServerEndpoint', endpoint);
+    console.log(`Game server endpoint set to: ${endpoint}`);
+  }
+  console.log('You may need to refresh the page for changes to take effect');
+};
+
 class Client {
   private gameStop: (() => void) | null = null;
 
@@ -57,12 +82,11 @@ class Client {
 
   private joinModal: JoinPrivateLobbyModal;
   private publicLobby: PublicLobby;
-  private googleAds: NodeListOf<GoogleAdElement>;
   private userSettings: UserSettings = new UserSettings();
 
   constructor() {}
 
-  initialize(): void {
+  async initialize(): Promise<void> {
     // Set up party system observer
     this.setupPartySystemObserver();
     const gameVersion = document.getElementById(
@@ -104,13 +128,37 @@ class Client {
       console.warn("Dark mode button element not found");
     }
 
+    // Initialize subscription button
+    const subscriptionContainer = document.getElementById("subscription-button-container-inline");
+    if (subscriptionContainer) {
+      new SubscriptionButton(subscriptionContainer);
+    } else {
+      console.warn("Subscription button container not found");
+    }
+
+    // Hide Discord login buttons - we're using custom auth now
     const loginDiscordButton = document.getElementById(
       "login-discord",
     ) as OButton;
     const logoutDiscordButton = document.getElementById(
       "logout-discord",
     ) as OButton;
+    
+    if (loginDiscordButton) {
+      loginDiscordButton.style.display = "none";
+    }
+    if (logoutDiscordButton) {
+      logoutDiscordButton.style.display = "none";
+    }
+    
+    // Initialize custom auth components
+    const profileDropdown = document.querySelector("profile-dropdown") as ProfileDropdown;
+    const loginModal = document.querySelector("login-modal") as LoginModal;
+    const registerModal = document.querySelector("register-modal") as RegisterModal;
+    const accountSettingsModal = document.querySelector("account-settings-modal") as AccountSettingsModal;
+    const passwordResetModal = document.querySelector("password-reset-modal") as PasswordResetModal;
 
+    // First, get the username input element
     this.usernameInput = document.querySelector(
       "username-input",
     ) as UsernameInput;
@@ -118,10 +166,86 @@ class Client {
       console.warn("Username input element not found");
     }
 
+    // Initialize auth service and check authentication status
+    try {
+      const isAuthenticated = await authService.isAuthenticated();
+      console.log('Auth service initialized, authenticated:', isAuthenticated);
+      
+      // If not authenticated, check if we have a username to create guest account
+      if (!isAuthenticated && this.usernameInput) {
+        const username = this.usernameInput.getCurrentUsername();
+        if (username && username !== '' && username !== 'Anon000') {
+          // Auto-login as guest with the username
+          await authService.loginAsGuest(username);
+          console.log('Auto-logged in as guest:', username);
+        }
+      }
+    } catch (error) {
+      console.warn('Auth service initialization failed:', error);
+      // Clear any corrupted auth data
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('refresh_token');
+      localStorage.removeItem('auth_user');
+    }
+
+    // Initialize stats tracker for real-time stat updates
+    console.log('Stats tracker initialized for game tracking');
+
+    // Set up auth event listeners
+    if (profileDropdown && loginModal) {
+      console.log('Setting up auth event listeners');
+      
+      // Listen for show-login event from profile dropdown
+      document.addEventListener('show-login', () => {
+        console.log('Opening login modal');
+        loginModal.open();
+      });
+
+      // Listen for show-register event
+      document.addEventListener('show-register', () => {
+        console.log('Opening register modal');
+        if (registerModal) {
+          registerModal.open();
+        }
+      });
+
+      // Listen for show-account-settings event
+      document.addEventListener('show-account-settings', () => {
+        console.log('Opening account settings modal');
+        if (accountSettingsModal) {
+          accountSettingsModal.open();
+        }
+      });
+
+      // Listen for show-forgot-password event
+      document.addEventListener('show-forgot-password', () => {
+        console.log('Opening password reset modal');
+        if (passwordResetModal) {
+          passwordResetModal.open();
+        }
+      });
+
+      // Listen for login success to update UI
+      document.addEventListener('login-success', async () => {
+        console.log('Login successful, updating UI');
+        // Profile dropdown will automatically update via auth state change
+        
+        // Check if user needs to accept terms
+        await checkTermsAcceptance();
+      });
+      
+      console.log('Auth event listeners set up successfully');
+    } else {
+      console.warn('Auth components not found:', {
+        profileDropdown: !!profileDropdown,
+        loginModal: !!loginModal,
+        registerModal: !!registerModal,
+        accountSettingsModal: !!accountSettingsModal,
+        passwordResetModal: !!passwordResetModal
+      });
+    }
+
     this.publicLobby = document.querySelector("public-lobby") as PublicLobby;
-    this.googleAds = document.querySelectorAll(
-      "google-ad",
-    ) as NodeListOf<GoogleAdElement>;
 
     window.addEventListener("beforeunload", () => {
       console.log("Browser is closing");
@@ -140,14 +264,22 @@ class Client {
     spModal instanceof SinglePlayerModal;
     const singlePlayer = document.getElementById("single-player");
     if (singlePlayer === null) throw new Error("Missing single-player");
-    singlePlayer.addEventListener("click", () => {
+    singlePlayer.addEventListener("click", async () => {
       const partySystem = document.querySelector('party-system') as PartySystem;
       if (partySystem?.isInPartyAsNonHost()) {
         // Don't allow non-host party members to access this
         return;
       }
       if (this.usernameInput?.isValid()) {
-        spModal.open();
+        // Check if user is logged in and needs to accept terms
+        const user = await authService.getCurrentUser();
+        if (user) {
+          await checkTermsAcceptance(() => {
+            spModal.open();
+          });
+        } else {
+          spModal.open();
+        }
       }
     });
 
@@ -165,52 +297,16 @@ class Client {
       hlpModal.open();
     });
 
+    // Discord login logic commented out - using custom auth system
+    // The old Discord OAuth code is preserved here for reference but not used
+    /*
     if (isLoggedIn() === false) {
-      // Not logged in
-      
-      // Check if we're in development mode
-      const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-      if (isDev) {
-        loginDiscordButton.disable = false;
-        loginDiscordButton.title = "Discord Login (Requires API Server)";
-        loginDiscordButton.addEventListener("click", async () => {
-          await discordLogin();
-        });
-      } else {
-        loginDiscordButton.disable = false;
-        loginDiscordButton.translationKey = "main.login_discord";
-        loginDiscordButton.addEventListener("click", discordLogin);
-      }
-      logoutDiscordButton.hidden = true;
-    } else {
-      // JWT appears to be valid
-      loginDiscordButton.disable = true;
-      loginDiscordButton.translationKey = "main.checking_login";
-      logoutDiscordButton.hidden = false;
-      logoutDiscordButton.addEventListener("click", () => {
-        // Log out
-        logOut();
-        loginDiscordButton.disable = false;
-        loginDiscordButton.translationKey = "main.login_discord";
-        loginDiscordButton.addEventListener("click", discordLogin);
-        logoutDiscordButton.hidden = true;
-      });
-      // Look up the discord user object.
-      // TODO: Add caching
-      getUserMe().then((userMeResponse) => {
-        if (userMeResponse === false) {
-          // Not logged in
-          loginDiscordButton.disable = false;
-          loginDiscordButton.translationKey = "main.login_discord";
-          loginDiscordButton.addEventListener("click", discordLogin);
-          logoutDiscordButton.hidden = true;
-          return;
-        }
-        loginDiscordButton.translationKey = "main.logged_in";
-        loginDiscordButton.hidden = true;
-        const { user, player } = userMeResponse;
-      });
+      // Discord login flow...
     }
+    */
+    
+    // Initialize auth state from our custom auth service
+    // Auth service doesn't need explicit initialization
 
     const settingsModal = document.querySelector(
       "user-setting",
@@ -228,15 +324,24 @@ class Client {
     hostModal instanceof HostPrivateLobbyModal;
     const hostLobbyButton = document.getElementById("host-lobby-button");
     if (hostLobbyButton === null) throw new Error("Missing host-lobby-button");
-    hostLobbyButton.addEventListener("click", () => {
+    hostLobbyButton.addEventListener("click", async () => {
       const partySystem = document.querySelector('party-system') as PartySystem;
       if (partySystem?.isInPartyAsNonHost()) {
         // Don't allow non-host party members to access this
         return;
       }
       if (this.usernameInput?.isValid()) {
-        hostModal.open();
-        this.publicLobby.leaveLobby();
+        // Check if user is logged in and needs to accept terms
+        const user = await authService.getCurrentUser();
+        if (user) {
+          await checkTermsAcceptance(() => {
+            hostModal.open();
+            this.publicLobby.leaveLobby();
+          });
+        } else {
+          hostModal.open();
+          this.publicLobby.leaveLobby();
+        }
       }
     });
 
@@ -249,14 +354,22 @@ class Client {
     );
     if (joinPrivateLobbyButton === null)
       throw new Error("Missing join-private-lobby-button");
-    joinPrivateLobbyButton.addEventListener("click", () => {
+    joinPrivateLobbyButton.addEventListener("click", async () => {
       const partySystem = document.querySelector('party-system') as PartySystem;
       if (partySystem?.isInPartyAsNonHost()) {
         // Don't allow non-host party members to access this
         return;
       }
       if (this.usernameInput?.isValid()) {
-        this.joinModal.open();
+        // Check if user is logged in and needs to accept terms
+        const user = await authService.getCurrentUser();
+        if (user) {
+          await checkTermsAcceptance(() => {
+            this.joinModal.open();
+          });
+        } else {
+          this.joinModal.open();
+        }
       }
     });
 
@@ -520,6 +633,14 @@ class Client {
     checkPartyStatus();
     setInterval(checkPartyStatus, 500);
   }
+  
+  private async checkAuthStatus(): Promise<void> {
+    const isAuthenticated = await authService.isAuthenticated();
+    if (isAuthenticated) {
+      const user = await authService.getCurrentUser();
+      console.log('User authenticated:', user?.username);
+    }
+  }
 }
 
 // Initialize the client when the DOM is loaded
@@ -544,8 +665,27 @@ document.addEventListener("DOMContentLoaded", async () => {
   }, 100);
   
   // Then initialize the client
-  new Client().initialize();
+  await new Client().initialize();
 });
+
+// Enable Hot Module Replacement (HMR)
+if (typeof module !== 'undefined' && (module as any).hot) {
+  (module as any).hot.accept();
+  
+  // Handle HMR updates for specific modules
+  (module as any).hot.accept('./styles.css', () => {
+    console.log('CSS updated via HMR');
+  });
+  
+  // Force reload when HTML changes
+  (module as any).hot.accept('./index.html', () => {
+    console.log('HTML updated, reloading page...');
+    window.location.reload();
+  });
+  
+  // Log HMR status
+  console.log('🔥 HMR is enabled and watching files');
+}
 
 function setFavicon(): void {
   const link = document.createElement("link");
@@ -557,15 +697,26 @@ function setFavicon(): void {
 
 // WARNING: DO NOT EXPOSE THIS ID
 function getPlayToken(): string {
+  // Fall back to Discord JWT first
   const result = isLoggedIn();
   if (result !== false) return result.token;
+  
+  // For all other cases (guests, development, etc.), use UUID
+  // The TokenSchema in LocalServer accepts either a UUID or JWT
   return getPersistentIDFromCookie();
 }
 
 // WARNING: DO NOT EXPOSE THIS ID
-export function getPersistentID(): string {
+export async function getPersistentID(): Promise<string> {
+  // First try custom auth user ID
+  const user = await authService.getCurrentUser();
+  if (user?.id) return user.id;
+  
+  // Fall back to Discord JWT
   const result = isLoggedIn();
   if (result !== false) return result.claims.sub;
+  
+  // Finally fall back to cookie
   return getPersistentIDFromCookie();
 }
 

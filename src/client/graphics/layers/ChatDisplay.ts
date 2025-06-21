@@ -130,14 +130,14 @@ export class ChatDisplay extends LitElement implements Layer {
     return html`
       <div
         class="${this._hidden
-          ? "w-fit px-[10px] py-[5px]"
-          : ""} rounded-md bg-black bg-opacity-60 relative max-h-[30vh] flex flex-col-reverse overflow-y-auto w-full lg:bottom-2.5 lg:right-2.5 z-50 lg:max-w-[30vw] lg:w-full lg:w-auto"
+          ? "w-fit px-[10px] py-[5px] sg-panel-compact"
+          : "sg-panel"} relative max-h-[30vh] flex flex-col-reverse overflow-y-auto w-full lg:bottom-2.5 lg:right-2.5 z-50 lg:max-w-[30vw] lg:w-full lg:w-auto"
         style="pointer-events: auto"
       >
         <div>
-          <div class="w-full bg-black/80 sticky top-0 px-[10px]">
+          <div class="w-full sg-card-inner sticky top-0 px-[10px]">
             <button
-              class="text-white cursor-pointer pointer-events-auto ${this
+              class="sg-text-primary cursor-pointer pointer-events-auto ${this
                 ._hidden
                 ? "hidden"
                 : ""}"
@@ -148,7 +148,7 @@ export class ChatDisplay extends LitElement implements Layer {
           </div>
 
           <button
-            class="text-white cursor-pointer pointer-events-auto ${this._hidden
+            class="sg-text-primary cursor-pointer pointer-events-auto ${this._hidden
               ? ""
               : "hidden"}"
             @click=${this.toggleHidden}
@@ -157,13 +157,13 @@ export class ChatDisplay extends LitElement implements Layer {
             <span
               class="${this.newEvents
                 ? ""
-                : "hidden"} inline-block px-2 bg-red-500 rounded-sm"
+                : "hidden"} inline-block px-2 bg-red-500/80 rounded-sm sg-text-primary"
               >${this.newEvents}</span
             >
           </button>
 
           <table
-            class="w-full border-collapse text-white shadow-lg text-xs sm:text-sm lg:text-xl ${this
+            class="w-full border-collapse sg-text-primary text-xs sm:text-sm lg:text-xl ${this
               ._hidden
               ? "hidden"
               : ""}"
@@ -173,7 +173,7 @@ export class ChatDisplay extends LitElement implements Layer {
               ${this.chatEvents.map(
                 (chat) => html`
                   <tr class="border-b border-opacity-0">
-                    <td class="p-1 sm:p-2 lg:p-3 text-left">
+                    <td class="p-1 sm:p-2 lg:p-3 text-left transition-colors duration-200 hover:bg-black/20">
                       ${this.getChatContent(chat)}
                     </td>
                   </tr>

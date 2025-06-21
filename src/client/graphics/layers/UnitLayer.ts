@@ -34,6 +34,8 @@ export class UnitLayer implements Layer {
   private unitTrailContext: CanvasRenderingContext2D;
 
   private unitToTrail = new Map<UnitView, TileRef[]>();
+  private unitTrailTimes = new Map<UnitView, number[]>(); // Track timestamps for each trail segment
+  private supplyTruckTrails = new Map<UnitView, Array<{tile: TileRef, time: number}>>(); // Separate trail system for supply trucks
 
   private theme: Theme;
 
@@ -68,6 +70,9 @@ export class UnitLayer implements Layer {
       ?.[GameUpdateType.Unit]?.map((unit) => unit.id);
 
     this.updateUnitsSprites(unitIds ?? []);
+    
+    // Clean up supply truck trails using separate system
+    this.updateSupplyTruckTrails();
   }
 
   init() {
@@ -196,6 +201,11 @@ export class UnitLayer implements Layer {
     this.updateUnitsSprites(this.game.units().map((unit) => unit.id()));
 
     this.unitToTrail.forEach((trail, unit) => {
+      // Don't repaint supply truck trails in redraw - they're handled by cleanup system
+      if (unit.type() === UnitType.SupplyTruck) {
+        return;
+      }
+      
       for (const t of trail) {
         this.paintCell(
           this.game.x(t),
@@ -278,6 +288,9 @@ export class UnitLayer implements Layer {
         break;
       case UnitType.TradeShip:
         this.handleTradeShipEvent(unit);
+        break;
+      case UnitType.SupplyTruck:
+        this.handleSupplyTruckEvent(unit);
         break;
       case UnitType.MIRVWarhead:
         this.handleMIRVWarhead(unit);
@@ -437,6 +450,91 @@ export class UnitLayer implements Layer {
     this.drawSprite(unit);
   }
 
+  private handleSupplyTruckEvent(unit: UnitView) {
+    // Supply trucks use their own separate trail system
+    const currentTime = Date.now();
+
+    if (!this.supplyTruckTrails.has(unit)) {
+      this.supplyTruckTrails.set(unit, []);
+    }
+    
+    const trail = this.supplyTruckTrails.get(unit) ?? [];
+    
+    // Only add to trail if the unit actually moved
+    const lastTile = unit.lastTile();
+    const currentTile = unit.tile();
+    if (lastTile !== currentTile) {
+      trail.push({ tile: lastTile, time: currentTime });
+      
+      // Keep only last 8 trail segments for better visibility
+      const maxTrailLength = 8;
+      if (trail.length > maxTrailLength) {
+        trail.shift();
+      }
+    }
+
+    // Draw the sprite
+    this.drawSprite(unit);
+    
+    // Trail cleanup is handled separately in tick method
+  }
+  
+  private updateSupplyTruckTrails() {
+    const currentTime = Date.now();
+    const maxAge = 1000; // 1 second trail fade
+    
+    // Clear all previous supply truck trail rendering
+    this.clearAllSupplyTruckTrails();
+    
+    // Process each supply truck
+    for (const [unit, trail] of this.supplyTruckTrails) {
+      if (!unit.isActive()) {
+        // Unit is dead - remove from system
+        this.supplyTruckTrails.delete(unit);
+        continue;
+      }
+      
+      // Filter valid trail segments
+      const validTrail = trail.filter(segment => {
+        const age = currentTime - segment.time;
+        if (age >= maxAge) return false; // Too old
+        
+        const tileOwner = this.game.owner(segment.tile);
+        return tileOwner === unit.owner(); // Still owned by truck owner
+      });
+      
+      // Update trail with only valid segments
+      this.supplyTruckTrails.set(unit, validTrail);
+      
+      // Paint valid segments on main canvas (not boat trail canvas)
+      const rel = this.relationship(unit);
+      for (const segment of validTrail) {
+        const age = currentTime - segment.time;
+        const fadeFactor = Math.max(0, 1 - (age / maxAge));
+        const alpha = 0.4 + (fadeFactor * 0.4); // 0.4 to 0.8 alpha
+        
+        const trailColor = this.theme.borderColor(unit.owner()).alpha(alpha);
+        this.paintCell(
+          this.game.x(segment.tile),
+          this.game.y(segment.tile),
+          rel,
+          trailColor,
+          Math.floor(alpha * 255),
+          this.context, // Use main canvas, not boat trail canvas
+        );
+      }
+    }
+  }
+  
+  private clearAllSupplyTruckTrails() {
+    // Clear all supply truck trail positions from main canvas
+    for (const [unit, trail] of this.supplyTruckTrails) {
+      for (const segment of trail) {
+        this.clearCell(this.game.x(segment.tile), this.game.y(segment.tile), this.context);
+      }
+    }
+  }
+
   private handleBoatEvent(unit: UnitView) {
     const rel = this.relationship(unit);
 
@@ -535,12 +633,21 @@ export class UnitLayer implements Layer {
     );
 
     if (unit.isActive()) {
+      // Scale down supply trucks to be smaller
+      let scale = 1.0;
+      if (unit.type() === UnitType.SupplyTruck) {
+        scale = 0.6; // Make supply trucks 60% of normal size
+      }
+      
+      const drawWidth = sprite.width * scale;
+      const drawHeight = sprite.height * scale;
+      
       this.context.drawImage(
         sprite,
-        Math.round(x - sprite.width / 2),
-        Math.round(y - sprite.height / 2),
-        sprite.width,
-        sprite.width,
+        Math.round(x - drawWidth / 2),
+        Math.round(y - drawHeight / 2),
+        drawWidth,
+        drawHeight,
       );
     }
   }

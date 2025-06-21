@@ -19,11 +19,13 @@ import { Leaderboard } from "./layers/Leaderboard";
 import { MainRadialMenu } from "./layers/MainRadialMenu";
 import { MultiTabModal } from "./layers/MultiTabModal";
 import { NameLayer } from "./layers/NameLayer";
+import { NukeTargetLayer } from "./layers/NukeTargetLayer";
 import { OptionsMenu } from "./layers/OptionsMenu";
 import { PlayerInfoOverlay } from "./layers/PlayerInfoOverlay";
 import { PlayerPanel } from "./layers/PlayerPanel";
 import { PlayerTeamLabel } from "./layers/PlayerTeamLabel";
 import { ReplayPanel } from "./layers/ReplayPanel";
+import { SAMRadiusLayer } from "./layers/SAMRadiusLayer";
 import { SpawnTimer } from "./layers/SpawnTimer";
 import { StructureLayer } from "./layers/StructureLayer";
 import { TeamStats } from "./layers/TeamStats";
@@ -201,6 +203,8 @@ export function createRenderer(
   const layers: Layer[] = [
     new TerrainLayer(game, transformHandler),
     new TerritoryLayer(game, eventBus, transformHandler),
+    new SAMRadiusLayer(game, eventBus, transformHandler), // Add before structures so it renders below them
+    new NukeTargetLayer(game, eventBus, transformHandler), // Nuke target zones
     structureLayer,
     new UnitLayer(game, eventBus, transformHandler),
     new FxLayer(game),

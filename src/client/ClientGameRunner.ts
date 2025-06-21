@@ -112,7 +112,9 @@ export function joinLobby(
     if (gameRunner) {
       gameRunner.stop();
     }
-    transport.leaveGame();
+    transport.leaveGame().catch((error) => {
+      console.error("Error leaving game:", error);
+    });
   };
 }
 
@@ -207,13 +209,13 @@ export class ClientGameRunner {
     return ["player", clientId];
   }
 
-  private saveGame(update: WinUpdate) {
+  private async saveGame(update: WinUpdate) {
     if (this.myPlayer === null) {
       return;
     }
     const players: PlayerRecord[] = [
       {
-        persistentID: getPersistentID(),
+        persistentID: await getPersistentID(),
         username: this.lobby.playerName,
         clientID: this.lobby.clientID,
         stats: update.allPlayersStats[this.lobby.clientID],
@@ -262,7 +264,7 @@ export class ClientGameRunner {
 
     this.renderer.initialize();
     this.input.initialize();
-    this.worker.start((gu: GameUpdateViewData | ErrorUpdate) => {
+    this.worker.start(async (gu: GameUpdateViewData | ErrorUpdate) => {
       if (this.lobby.gameStartInfo === undefined) {
         throw new Error("missing gameStartInfo");
       }
@@ -285,7 +287,7 @@ export class ClientGameRunner {
       this.renderer.tick();
 
       if (gu.updates[GameUpdateType.Win].length > 0) {
-        this.saveGame(gu.updates[GameUpdateType.Win][0]);
+        await this.saveGame(gu.updates[GameUpdateType.Win][0]);
       }
     });
     const worker = this.worker;
@@ -378,7 +380,9 @@ export class ClientGameRunner {
     
     // Cleanup worker (this will clear the callback)
     this.worker.cleanup();
-    this.transport.leaveGame(saveFullGame);
+    this.transport.leaveGame(saveFullGame).catch((error) => {
+      console.error("Error leaving game:", error);
+    });
     if (this.connectionCheckInterval) {
       clearInterval(this.connectionCheckInterval);
       this.connectionCheckInterval = null;

@@ -52,15 +52,9 @@ export class Leaderboard extends LitElement implements Layer {
   init() {}
 
   tick() {
-    if (this.game === null) throw new Error("Not initialized");
-    if (!this._shownOnInit && !this.game.inSpawnPhase()) {
-      this._shownOnInit = true;
-      this.showLeaderboard();
-      this.updateLeaderboard();
-    }
-    if (this._leaderboardHidden) {
-      return;
-    }
+    // Always hide standalone leaderboard since it's integrated into unified control panel
+    this._leaderboardHidden = true;
+    return;
 
     if (this.game.ticks() % 10 === 0) {
       this.updateLeaderboard();
@@ -177,17 +171,42 @@ export class Leaderboard extends LitElement implements Layer {
     }
     .leaderboard {
       position: fixed;
-      top: 70px;
+      top: 120px;
       left: 10px;
-      z-index: 9998;
-      background-color: rgb(31 41 55 / 0.7);
-      padding: 0 10px 10px;
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-      border-radius: 10px;
+      z-index: 9997;
+      background: linear-gradient(135deg, rgba(20, 25, 20, 0.95) 0%, rgba(15, 20, 15, 0.98) 100%);
+      border: 1px solid rgba(74, 95, 58, 0.3);
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 20px rgba(74, 95, 58, 0.1);
+      backdrop-filter: blur(10px);
+      padding: 16px;
       max-width: 500px;
-      max-height: 30vh;
+      max-height: 40vh;
       overflow-y: auto;
-      backdrop-filter: blur(5px);
+      animation: sg-panel-slide-in 0.3s ease-out;
+    }
+    
+    .leaderboard::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: radial-gradient(ellipse at top center, rgba(74, 95, 58, 0.15) 0%, transparent 100%);
+      pointer-events: none;
+      border-radius: 16px 16px 0 0;
+    }
+    
+    @keyframes sg-panel-slide-in {
+      from {
+        opacity: 0;
+        transform: translateX(-30px) scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+      }
     }
 
     .hidden {
@@ -203,21 +222,43 @@ export class Leaderboard extends LitElement implements Layer {
     .leaderboard__button {
       position: fixed;
       left: 10px;
-      top: 70px;
-      z-index: 9998;
-      background-color: rgb(31 41 55 / 0.7);
-      color: white;
-      border: none;
-      border-radius: 4px;
-      padding: 5px 10px;
+      top: 120px;
+      z-index: 9997;
+      background: linear-gradient(135deg, rgba(74, 95, 58, 0.8) 0%, rgba(74, 95, 58, 0.6) 100%);
+      border: 1px solid rgba(74, 95, 58, 0.5);
+      border-radius: 8px;
+      color: #d4e0c4;
+      font-weight: 500;
+      padding: 8px 12px;
       cursor: pointer;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+    
+    .leaderboard__button:hover {
+      background: linear-gradient(135deg, rgba(74, 95, 58, 0.9) 0%, rgba(74, 95, 58, 0.7) 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(74, 95, 58, 0.3);
     }
 
     .leaderboard__actionButton {
-      background: none;
-      border: none;
-      color: white;
+      background: linear-gradient(135deg, rgba(30, 35, 45, 0.8) 0%, rgba(25, 30, 40, 0.8) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      color: #d4e0c4;
+      padding: 6px 12px;
+      margin: 0 4px 8px 0;
       cursor: pointer;
+      font-size: 12px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+    
+    .leaderboard__actionButton:hover {
+      background: linear-gradient(135deg, rgba(74, 95, 58, 0.3) 0%, rgba(74, 95, 58, 0.15) 100%);
+      border-color: rgba(74, 95, 58, 0.4);
+      transform: translateY(-1px);
     }
 
     .leaderboard__row {
@@ -228,27 +269,43 @@ export class Leaderboard extends LitElement implements Layer {
         justify-content: center;
         text-align: center;
         align-items: center;
-        padding: 6px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        color: white;
+        padding: 8px 6px;
+        border-bottom: 1px solid rgba(74, 95, 58, 0.2);
+        color: #e0e0e0;
+        transition: all 0.2s ease;
+        position: relative;
       }
 
       &:hover {
         > div {
-          background-color: rgba(78, 78, 78, 0.8);
+          background: rgba(74, 95, 58, 0.15);
+          color: #d4e0c4;
         }
       }
     }
+    
     .leaderboard__row--header {
       > div {
-        background-color: rgb(31 41 55 / 0.5);
-        font-weight: bold;
-        color: white;
+        background: linear-gradient(135deg, rgba(74, 95, 58, 0.2) 0%, rgba(74, 95, 58, 0.1) 100%);
+        font-weight: 600;
+        color: #d4e0c4;
+        text-transform: uppercase;
+        font-size: 12px;
+        letter-spacing: 0.5px;
+        border-bottom: 2px solid rgba(74, 95, 58, 0.3);
+        cursor: pointer;
+      }
+      
+      > div:hover {
+        background: linear-gradient(135deg, rgba(74, 95, 58, 0.3) 0%, rgba(74, 95, 58, 0.15) 100%);
       }
     }
 
     .myPlayer > div {
-      font-weight: bold;
+      font-weight: 600;
+      color: #7fa050;
+      background: rgba(127, 160, 80, 0.1);
+      border-left: 3px solid #7fa050;
     }
 
     .player-name {

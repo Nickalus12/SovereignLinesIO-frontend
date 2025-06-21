@@ -1,24 +1,298 @@
+/* Military-Themed Footer Styles */
 .l-footer {
-  background: var(--boxBackgroundColor);
-  backdrop-filter: blur(var(--blur-md));
+  background: 
+    linear-gradient(180deg, rgba(0, 0, 0, 0.4) 0%, rgba(20, 25, 20, 0.6) 100%),
+    radial-gradient(ellipse at bottom, rgba(74, 95, 58, 0.1) 0%, transparent 70%);
+  backdrop-filter: blur(10px) saturate(120%);
+  -webkit-backdrop-filter: blur(10px) saturate(120%);
   display: flex;
   justify-content: center;
-  padding: 12px;
+  padding: 20px 24px;
+  border-top: 2px solid rgba(74, 95, 58, 0.3);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+}
 
-  @media (min-width: 800px) {
-    padding: 12px 24px;
-  }
+/* Tactical scan line effect */
+.l-footer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    rgba(143, 188, 143, 0.6) 50%, 
+    transparent 100%
+  );
+  animation: footerScanLine 3s ease-in-out infinite;
+}
+
+@keyframes footerScanLine {
+  0%, 100% { opacity: 0.3; transform: scaleX(0.5); }
+  50% { opacity: 1; transform: scaleX(1); }
 }
 
 .l-footer__content {
-  max-width: 860px;
-  flex-wrap: wrap;
+  max-width: 1200px;
+  width: 100%;
   display: flex;
-  flex: 1;
-  justify-content: space-between;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 40px;
 }
 
 .l-footer__col {
   display: flex;
-  gap: 20px;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* Ensure second column items align properly */
+.l-footer__col:last-child {
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Military-style links */
+.t-link {
+  position: relative;
+  color: #a8b89c;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 13px;
+  font-family: 'Courier New', monospace;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 6px 12px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Tactical hover effect */
+.t-link::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #8fbc8f, transparent);
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.t-link:hover {
+  color: #d4e0c4;
+  background: rgba(74, 95, 58, 0.1);
+  text-shadow: 0 0 10px rgba(143, 188, 143, 0.4);
+}
+
+.t-link:hover::before {
+  transform: scaleX(1);
+}
+
+/* Discord link with icon */
+.t-link--discord {
+  color: #b8c8ff;
+  padding: 8px 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.discord-icon {
+  width: 20px;
+  height: 20px;
+  opacity: 0.9;
+  transition: all 0.3s ease;
+  filter: brightness(1.2);
+}
+
+.t-link--discord:hover {
+  background: rgba(88, 101, 242, 0.1);
+  color: #d8e0ff;
+}
+
+.t-link--discord:hover .discord-icon {
+  opacity: 1;
+  transform: scale(1.1);
+  filter: brightness(1.4) drop-shadow(0 0 8px rgba(88, 101, 242, 0.6));
+}
+
+/* Copyright section */
+.l-footer__col.t-text-white {
+  color: #8a9680;
+  font-size: 12px;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.5px;
+}
+
+/* Sovereign/GitHub link - with box */
+.l-footer__col .t-link[href*="github"] {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, rgba(74, 95, 58, 0.15) 0%, rgba(74, 95, 58, 0.05) 100%);
+  border: 1px solid rgba(74, 95, 58, 0.4);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  font-weight: 700;
+  color: #d4e0c4;
+  padding: 8px 16px;
+  margin: 0;
+}
+
+.l-footer__col .t-link[href*="github"]:hover {
+  background: linear-gradient(135deg, rgba(74, 95, 58, 0.25) 0%, rgba(74, 95, 58, 0.1) 100%);
+  border-color: rgba(143, 188, 143, 0.6);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(74, 95, 58, 0.3);
+}
+
+.l-footer__col .t-link[href*="github"] img {
+  width: 16px !important;
+  height: 16px !important;
+  opacity: 0.8;
+  transition: all 0.3s ease;
+}
+
+.l-footer__col .t-link[href*="github"]:hover img {
+  opacity: 1;
+  transform: rotate(360deg);
+}
+
+/* Privacy and Terms links */
+.l-footer__col .t-link[href*="privacy"],
+.l-footer__col .t-link[href*="terms"] {
+  font-size: 12px;
+  color: #8a9680;
+  padding: 4px 8px;
+}
+
+/* Mobile responsive design */
+@media (max-width: 768px) {
+  .l-footer {
+    padding: 16px;
+  }
+
+  .l-footer__content {
+    flex-direction: column;
+    text-align: center;
+    gap: 20px;
+    justify-content: center;
+  }
+
+  .l-footer__col {
+    width: 100%;
+    justify-content: center;
+    gap: 12px;
+  }
+
+  .t-link {
+    font-size: 12px;
+    padding: 6px 10px;
+    letter-spacing: 0.8px;
+  }
+  
+  .t-link--discord {
+    padding: 8px 12px;
+  }
+  
+  .discord-icon {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .l-footer__col .t-link[href*="github"] {
+    margin-right: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .l-footer {
+    padding: 12px;
+  }
+  
+  .l-footer__content {
+    gap: 16px;
+  }
+  
+  .l-footer__col {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  /* Keep copyright row items horizontal on mobile */
+  .l-footer__col:last-child {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .t-link {
+    width: 100%;
+    max-width: 220px;
+    justify-content: center;
+    text-align: center;
+    font-size: 11px;
+    padding: 8px 12px;
+  }
+  
+  .t-link--discord {
+    order: -1; /* Move Discord to top */
+    background: rgba(88, 101, 242, 0.1);
+    border: 1px solid rgba(88, 101, 242, 0.3);
+  }
+
+  .l-footer__col.t-text-white {
+    font-size: 11px;
+  }
+  
+  .discord-icon {
+    width: 16px;
+    height: 16px;
+  }
+  
+  /* Stack copyright section items vertically */
+  .l-footer__col .t-link[href*="github"] {
+    width: 100%;
+    max-width: 220px;
+    justify-content: center;
+  }
+}
+
+/* Add tactical grid pattern overlay */
+.l-footer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    repeating-linear-gradient(0deg, 
+      transparent, 
+      transparent 24px, 
+      rgba(143, 188, 143, 0.02) 24px, 
+      rgba(143, 188, 143, 0.02) 25px
+    ),
+    repeating-linear-gradient(90deg, 
+      transparent, 
+      transparent 24px, 
+      rgba(143, 188, 143, 0.02) 24px, 
+      rgba(143, 188, 143, 0.02) 25px
+    );
+  pointer-events: none;
+  opacity: 0.5;
 }

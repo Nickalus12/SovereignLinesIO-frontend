@@ -98,6 +98,10 @@ export class NameLayer implements Layer {
 
   redraw() {
     this.theme = this.game.config().theme();
+    // Force all render info to be recalculated on next render
+    this.renders.forEach(render => {
+      render.lastRenderCalc = 0;
+    });
   }
 
   public init() {
@@ -196,6 +200,7 @@ export class NameLayer implements Layer {
       flagImg.style.opacity = "0.8";
       flagImg.src = "/flags/" + player.flag() + ".svg";
       flagImg.style.aspectRatio = "3/4";
+      flagImg.style.display = this.userSettings.hideFlags() ? "none" : "inline-block";
       nameDiv.appendChild(flagImg);
     }
     nameDiv.classList.add("player-name");
@@ -209,7 +214,12 @@ export class NameLayer implements Layer {
 
     const nameSpan = document.createElement("span");
     nameSpan.className = "player-name-span";
-    nameSpan.innerHTML = player.name();
+    // Hide nation names if the setting is enabled, unless anonymous names is also enabled
+    if (this.userSettings.hideNationNames() && !this.userSettings.anonymousNames()) {
+      nameSpan.innerHTML = "";
+    } else {
+      nameSpan.innerHTML = player.name();
+    }
     nameDiv.appendChild(nameSpan);
     element.appendChild(nameDiv);
 
@@ -305,14 +315,22 @@ export class NameLayer implements Layer {
     nameDiv.style.color = render.fontColor;
     const span = nameDiv.querySelector(".player-name-span");
     if (span) {
-      span.innerHTML = render.player.name();
+      // Hide nation names if the setting is enabled, unless anonymous names is also enabled
+      // (anonymous names takes precedence)
+      if (this.userSettings.hideNationNames() && !this.userSettings.anonymousNames()) {
+        span.innerHTML = "";
+      } else {
+        span.innerHTML = render.player.name();
+      }
     }
     if (flagDiv) {
       flagDiv.style.height = `${render.fontSize}px`;
+      flagDiv.style.display = this.userSettings.hideFlags() ? "none" : "block";
     }
     troopsDiv.style.fontSize = `${render.fontSize}px`;
     troopsDiv.style.color = render.fontColor;
     troopsDiv.textContent = renderTroops(render.player.troops());
+    troopsDiv.style.display = this.userSettings.hideTroops() ? "none" : "block";
 
     const density = renderNumber(
       render.player.troops() / render.player.numTilesOwned(),
@@ -339,9 +357,9 @@ export class NameLayer implements Layer {
     const myPlayer = this.game.myPlayer();
     const isDarkMode = this.userSettings.darkMode();
 
-    // Crown icon
+    // Crown icon - only show if not hidden by user settings
     const existingCrown = iconsDiv.querySelector('[data-icon="crown"]');
-    if (render.player === this.firstPlace) {
+    if (render.player === this.firstPlace && !this.userSettings.hideCrowns()) {
       if (!existingCrown) {
         iconsDiv.appendChild(
           this.createIconElement(

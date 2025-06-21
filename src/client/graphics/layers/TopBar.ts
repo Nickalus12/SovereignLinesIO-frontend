@@ -30,14 +30,9 @@ export class TopBar extends LitElement implements Layer {
   }
 
   tick() {
-    // Hide if player is dead or in spawn phase
-    const myPlayer = this.game?.myPlayer();
-    const shouldShow = !!(myPlayer?.isAlive() && !this.game?.inSpawnPhase());
-    
-    if (shouldShow !== this.isVisible) {
-      this.isVisible = shouldShow;
-      this.style.display = shouldShow ? '' : 'none';
-    }
+    // Always hide TopBar since resources are now integrated into unified control panel
+    this.isVisible = false;
+    this.style.display = 'none';
     
     if (this.isVisible) {
       this.updatePopulationIncrease();
@@ -72,38 +67,50 @@ export class TopBar extends LitElement implements Layer {
 
     return html`
       <div
-        class="fixed top-0 z-50 bg-gray-800/70 text-white text-sm p-1 rounded-ee-sm lg:rounded grid grid-cols-1 sm:grid-cols-2 w-1/2 sm:w-2/3 md:w-1/2 lg:hidden backdrop-blur"
+        class="fixed top-0 left-0 z-40 sg-panel p-3 rounded-none rounded-br-lg grid grid-cols-1 sm:grid-cols-2 gap-3 w-auto min-w-[300px] lg:hidden"
+        style="background: linear-gradient(135deg, rgba(20, 25, 20, 0.95) 0%, rgba(15, 20, 15, 0.98) 100%); 
+               border: 1px solid rgba(74, 95, 58, 0.3); 
+               border-left: none; 
+               border-top: none;"
       >
-        <!-- Pop section (takes 2 columns on desktop) -->
-        <div
-          class="sm:col-span-1 flex items-center space-x-1 overflow-x-auto whitespace-nowrap"
-        >
-          <span class="font-bold shrink-0"
-            >${translateText("control_panel.pop")}:</span
-          >
-          <span translate="no"
-            >${renderTroops(myPlayer.population())} /
-            ${renderTroops(maxPop)}</span
-          >
-          <span
-            translate="no"
-            class="${this._popRateIsIncreasing
-              ? "text-green-500"
-              : "text-yellow-500"}"
-            >(+${renderTroops(popRate)})</span
-          >
+        <!-- Population Card -->
+        <div class="sg-card p-3">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="text-lg">👥</span>
+              <div>
+                <div class="sg-text-muted text-xs">${translateText("control_panel.pop")}</div>
+                <div class="sg-text-primary font-bold text-sm" translate="no">
+                  ${renderTroops(myPlayer.population())} / ${renderTroops(maxPop)}
+                </div>
+              </div>
+            </div>
+            <div class="text-right">
+              <div class="text-xs ${this._popRateIsIncreasing ? "text-green-400" : "text-yellow-400"}" translate="no">
+                +${renderTroops(popRate)}/s
+              </div>
+            </div>
+          </div>
         </div>
-        <!-- Gold section (takes 1 column on desktop) -->
-        <div
-          class="flex items-center space-x-2 overflow-x-auto whitespace-nowrap"
-        >
-          <span class="font-bold shrink-0"
-            >${translateText("control_panel.gold")}:</span
-          >
-          <span translate="no"
-            >${renderNumber(myPlayer.gold())}
-            (+${renderNumber(goldPerSecond)})</span
-          >
+        
+        <!-- Gold Card -->
+        <div class="sg-card p-3">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="text-lg">💰</span>
+              <div>
+                <div class="sg-text-muted text-xs">${translateText("control_panel.gold")}</div>
+                <div class="sg-text-primary font-bold text-sm" translate="no">
+                  ${renderNumber(myPlayer.gold())}
+                </div>
+              </div>
+            </div>
+            <div class="text-right">
+              <div class="text-xs text-green-400" translate="no">
+                +${renderNumber(goldPerSecond)}/s
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     `;

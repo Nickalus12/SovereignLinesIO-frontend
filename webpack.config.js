@@ -9,19 +9,38 @@ import webpack from "webpack";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const gitCommit =
-  process.env.GIT_COMMIT ?? execSync("git rev-parse HEAD").toString().trim();
+let gitCommit = process.env.GIT_COMMIT;
+if (!gitCommit) {
+  try {
+    gitCommit = execSync("git rev-parse HEAD").toString().trim();
+  } catch (error) {
+    // If not in a git repo, use a default value
+    gitCommit = "development";
+    console.warn("Not in a git repository, using 'development' as commit hash");
+  }
+}
 
 export default async (env, argv) => {
   const isProduction = argv.mode === "production";
+  // Allow overriding the backend host via environment variable
+  const BACKEND_HOST = process.env.BACKEND_HOST || 'localhost';
 
   return {
+    mode: isProduction ? "production" : "development",
     entry: "./src/client/Main.ts",
     output: {
       publicPath: "/",
-      filename: "js/[name].[contenthash].js", // Added content hash
+      filename: isProduction ? "js/[name].[contenthash].js" : "js/[name].js",
       path: path.resolve(__dirname, "static"),
       clean: isProduction,
+    },
+    cache: isProduction ? false : {
+      type: 'memory',
+    },
+    watchOptions: isProduction ? {} : {
+      ignored: /node_modules/,
+      aggregateTimeout: 300,
+      poll: 1000, // Enable polling for WSL2 compatibility
     },
     module: {
       rules: [
@@ -29,19 +48,25 @@ export default async (env, argv) => {
           test: /\.bin$/,
           type: "asset/resource", // Changed from raw-loader
           generator: {
-            filename: "binary/[name].[contenthash][ext]", // Added content hash
+            filename: isProduction ? "binary/[name].[contenthash][ext]" : "binary/[name][ext]",
           },
         },
         {
           test: /\.txt$/,
           type: "asset/resource", // Changed from raw-loader
           generator: {
-            filename: "text/[name].[contenthash][ext]", // Added content hash
+            filename: isProduction ? "text/[name].[contenthash][ext]" : "text/[name][ext]",
           },
         },
         {
           test: /\.ts$/,
-          use: "ts-loader",
+          use: {
+            loader: "ts-loader",
+            options: {
+              transpileOnly: !isProduction,
+              configFile: "tsconfig.client.json",
+            },
+          },
           exclude: /node_modules/,
         },
         {
@@ -68,7 +93,7 @@ export default async (env, argv) => {
           test: /\.(webp|png|jpe?g|gif)$/i,
           type: "asset/resource",
           generator: {
-            filename: "images/[name].[contenthash][ext]", // Added content hash
+            filename: isProduction ? "images/[name].[contenthash][ext]" : "images/[name][ext]",
           },
         },
         {
@@ -79,14 +104,14 @@ export default async (env, argv) => {
           test: /\.svg$/,
           type: "asset/resource", // Changed from asset/inline for caching
           generator: {
-            filename: "images/[name].[contenthash][ext]", // Added content hash
+            filename: isProduction ? "images/[name].[contenthash][ext]" : "images/[name][ext]",
           },
         },
         {
           test: /\.(woff|woff2|eot|ttf|otf)$/,
           type: "asset/resource", // Changed from file-loader
           generator: {
-            filename: "fonts/[name].[contenthash][ext]", // Added content hash and fixed path
+            filename: isProduction ? "fonts/[name].[contenthash][ext]" : "fonts/[name][ext]",
           },
         },
       ],
@@ -123,24 +148,28 @@ export default async (env, argv) => {
         "process.env.GAME_ENV": JSON.stringify(isProduction ? "prod" : "dev"),
         "process.env.GIT_COMMIT": JSON.stringify(gitCommit),
       }),
-      new CopyPlugin({
-        patterns: [
-          {
-            from: path.resolve(__dirname, "resources"),
-            to: path.resolve(__dirname, "static"),
-            noErrorOnMissing: true,
-          },
-        ],
-        options: { concurrency: 100 },
-      }),
-      new ESLintPlugin({
-        context: __dirname,
-      }),
+      ...(isProduction ? [
+        new CopyPlugin({
+          patterns: [
+            {
+              from: path.resolve(__dirname, "resources"),
+              to: path.resolve(__dirname, "static"),
+              noErrorOnMissing: true,
+            },
+          ],
+          options: { concurrency: 100 },
+        })
+      ] : []),
+      ...(isProduction ? [
+        new ESLintPlugin({
+          context: __dirname,
+        })
+      ] : []),
     ],
     optimization: {
       // Add optimization configuration for better caching
-      runtimeChunk: "single",
-      splitChunks: {
+      runtimeChunk: isProduction ? "single" : false,
+      splitChunks: isProduction ? {
         cacheGroups: {
           vendor: {
             test: /[\\/]node_modules[\\/]/,
@@ -148,29 +177,49 @@ export default async (env, argv) => {
             chunks: "all",
           },
         },
-      },
+      } : false,
     },
     devServer: isProduction
       ? {}
       : {
-          devMiddleware: { writeToDisk: true },
+          hot: true,
+          liveReload: true,
+          devMiddleware: { 
+            writeToDisk: false,
+            publicPath: '/',
+            stats: 'minimal'
+          },
           static: [
             {
               directory: path.join(__dirname, "static"),
+              watch: false,
             },
             {
               directory: path.join(__dirname, "resources"),
               publicPath: "/",
+              watch: true,
             },
           ],
           historyApiFallback: true,
           compress: true,
+          host: '0.0.0.0', // Listen on all interfaces
           port: 9000,
+          open: false,
+          allowedHosts: 'all', // Allow connections from any host
+          client: {
+            logging: 'warn',
+            overlay: {
+              errors: true,
+              warnings: false,
+            },
+            progress: false,
+            reconnect: true,
+          },
           proxy: [
             // WebSocket proxies
             {
               context: ["/socket"],
-              target: "ws://localhost:3000",
+              target: `ws://${BACKEND_HOST}:3000`,
               ws: true,
               changeOrigin: true,
               logLevel: "debug",
@@ -178,7 +227,7 @@ export default async (env, argv) => {
             // Worker WebSocket proxies - using direct paths without /socket suffix
             {
               context: ["/w0"],
-              target: "ws://localhost:3001",
+              target: `ws://${BACKEND_HOST}:3001`,
               ws: true,
               secure: false,
               changeOrigin: true,
@@ -186,7 +235,7 @@ export default async (env, argv) => {
             },
             {
               context: ["/w1"],
-              target: "ws://localhost:3002",
+              target: `ws://${BACKEND_HOST}:3002`,
               ws: true,
               secure: false,
               changeOrigin: true,
@@ -194,7 +243,7 @@ export default async (env, argv) => {
             },
             {
               context: ["/w2"],
-              target: "ws://localhost:3003",
+              target: `ws://${BACKEND_HOST}:3003`,
               ws: true,
               secure: false,
               changeOrigin: true,
@@ -203,7 +252,7 @@ export default async (env, argv) => {
             // Worker proxies for HTTP requests
             {
               context: ["/w0"],
-              target: "http://localhost:3001",
+              target: `http://${BACKEND_HOST}:3001`,
               pathRewrite: { "^/w0": "" },
               secure: false,
               changeOrigin: true,
@@ -211,7 +260,7 @@ export default async (env, argv) => {
             },
             {
               context: ["/w1"],
-              target: "http://localhost:3002",
+              target: `http://${BACKEND_HOST}:3002`,
               pathRewrite: { "^/w1": "" },
               secure: false,
               changeOrigin: true,
@@ -219,7 +268,7 @@ export default async (env, argv) => {
             },
             {
               context: ["/w2"],
-              target: "http://localhost:3003",
+              target: `http://${BACKEND_HOST}:3003`,
               pathRewrite: { "^/w2": "" },
               secure: false,
               changeOrigin: true,
@@ -240,7 +289,7 @@ export default async (env, argv) => {
                 "/api/kick_player",
                 "/api/party",
               ],
-              target: "http://localhost:3000",
+              target: `http://${BACKEND_HOST}:3000`,
               secure: false,
               changeOrigin: true,
             },

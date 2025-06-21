@@ -17,6 +17,18 @@ export class TestConfig extends DefaultConfig {
     return 1;
   }
 
+  samMinDist(): number {
+    return 25; // Use same default as production
+  }
+
+  samMissilesPerLevel(level: number): number {
+    // Same logic as production for consistency in tests
+    if (level >= 3) {
+      return 2;
+    }
+    return 1;
+  }
+
   radiusPortSpawn(): number {
     return 1;
   }

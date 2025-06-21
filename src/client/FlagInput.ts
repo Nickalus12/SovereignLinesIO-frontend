@@ -85,7 +85,7 @@ export class FlagInput extends LitElement {
       <div class="flex relative">
         <button
           @click=${() => (this.showModal = !this.showModal)}
-          class="border p-[4px] rounded-lg flex cursor-pointer border-black/30 dark:border-gray-300/60 bg-white/70 dark:bg-[rgba(55,65,81,0.7)]"
+          class="p-[4px] rounded-lg flex cursor-pointer military-glass-flag"
           title="Pick a flag!"
         >
           <img class="size-[48px]" src="/flags/${this.flag || "xx"}.svg" onerror="this.src='/flags/xx.svg'; this.onerror=null;" />
@@ -93,13 +93,13 @@ export class FlagInput extends LitElement {
         ${this.showModal
           ? html`
               <div
-                class="text-white flex flex-col gap-[0.5rem] absolute top-[60px] left-[0px] w-[780%] h-[500px] max-h-[50vh] max-w-[87vw] bg-gray-900/80 backdrop-blur-md p-[10px] rounded-[8px] z-[3] ${this
+                class="text-white flex flex-col gap-[0.5rem] absolute top-[60px] left-[0px] w-[780%] h-[500px] max-h-[50vh] max-w-[87vw] p-[10px] rounded-[8px] z-[3] military-glass-modal ${this
                   .showModal
                   ? ""
                   : "hidden"}"
               >
                 <input
-                  class="h-[2rem] border-none text-center border border-gray-300 rounded-xl shadow-sm text-2xl text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black dark:border-gray-300/60 dark:bg-gray-700 dark:text-white"
+                  class="h-[2rem] text-center text-lg focus:outline-none military-glass-search"
                   type="text"
                   placeholder="Search..."
                   @change=${this.handleSearch}
