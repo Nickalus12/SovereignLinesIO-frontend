@@ -737,15 +737,17 @@ export class PartySystem extends LitElement {
   render() {
     return html`
       <div class="party-container ${this.isExpanded ? 'expanded' : ''}"
-           style="background: rgba(13, 17, 8, 0.85); 
-                  backdrop-filter: blur(12px); 
-                  border: 1px solid rgba(74, 95, 58, 0.3);
+           style="background: rgba(255, 255, 255, 0.03); 
+                  backdrop-filter: blur(16px) saturate(180%);
+                  -webkit-backdrop-filter: blur(16px) saturate(180%);
+                  border: 1px solid rgba(255, 255, 255, 0.08);
                   border-radius: 16px;
                   padding: 0.75rem 1rem;
                   margin: 0.75rem auto;
                   max-width: 500px;
                   transition: all 0.3s ease;
-                  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);">
+                  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2), 
+                              0 0 0 1px rgba(255, 255, 255, 0.05) inset;">
         
         <!-- Header -->
         <div class="party-header flex items-center justify-between cursor-pointer select-none"
@@ -794,9 +796,10 @@ export class PartySystem extends LitElement {
                 <button @click=${this.createParty}
                         ?disabled=${this.isConnecting}
                         class="w-full px-3 py-2.5 text-white font-semibold rounded-lg transition-all duration-300 hover:scale-[1.01] ${this.isConnecting ? 'opacity-50 cursor-not-allowed' : ''}"
-                        style="background: linear-gradient(135deg, #4a5f3a 0%, #2d3b25 100%);
-                               border: 1px solid rgba(74, 95, 58, 0.6);
-                               box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);">
+                        style="background: linear-gradient(135deg, rgba(74, 95, 58, 0.2) 0%, rgba(45, 59, 37, 0.2) 100%);
+                               backdrop-filter: blur(8px);
+                               border: 1px solid rgba(255, 255, 255, 0.1);
+                               box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1), inset 0 0 0 1px rgba(255, 255, 255, 0.05);">
                   <div class="flex items-center justify-center gap-2">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
@@ -816,17 +819,19 @@ export class PartySystem extends LitElement {
                          placeholder="ENTER CODE"
                          maxlength="6"
                          class="flex-1 px-3 py-2.5 text-white placeholder-gray-500 rounded-lg text-center focus:outline-none transition-all"
-                         style="background: rgba(0, 0, 0, 0.4);
-                                border: 1px solid rgba(74, 95, 58, 0.3);
+                         style="background: rgba(255, 255, 255, 0.05);
+                                backdrop-filter: blur(8px);
+                                border: 1px solid rgba(255, 255, 255, 0.1);
                                 font-family: monospace;
                                 letter-spacing: 0.2em;
                                 font-size: 14px;">
                   <button @click=${this.joinParty}
                           ?disabled=${this.isConnecting}
                           class="px-5 py-2.5 text-white font-semibold rounded-lg transition-all duration-300 hover:scale-[1.02] ${this.isConnecting ? 'opacity-50 cursor-not-allowed' : ''}"
-                          style="background: linear-gradient(135deg, #1e3a8a 0%, #1e293b 100%);
-                                 border: 1px solid rgba(59, 130, 246, 0.4);
-                                 box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);">
+                          style="background: linear-gradient(135deg, rgba(30, 58, 138, 0.3) 0%, rgba(30, 41, 59, 0.3) 100%);
+                                 backdrop-filter: blur(8px);
+                                 border: 1px solid rgba(255, 255, 255, 0.1);
+                                 box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1), inset 0 0 0 1px rgba(255, 255, 255, 0.05);">
                     Join
                   </button>
                 </div>
@@ -840,7 +845,7 @@ export class PartySystem extends LitElement {
               <div class="flex flex-col gap-2">
                 <!-- Party Code Display -->
                 <div class="flex items-center justify-between p-2.5 rounded-lg"
-                     style="background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(74, 95, 58, 0.2);">
+                     style="background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.08);">
                   <div class="flex items-center gap-3">
                     <div>
                       <div class="text-xs text-gray-500 mb-0.5">Party Code</div>
@@ -851,7 +856,7 @@ export class PartySystem extends LitElement {
                   </div>
                   <button @click=${this.copyPartyCode}
                           class="px-3 py-1.5 text-xs text-gray-300 rounded-md transition-all duration-300 hover:text-white"
-                          style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);">
+                          style="background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.08);">
                     <div class="flex items-center gap-1.5">
                       <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
@@ -865,7 +870,8 @@ export class PartySystem extends LitElement {
                 ${!this.isHost() ? html`
                   <!-- Host control indicator for party members -->
                   <div class="mt-3 p-2.5 rounded-lg text-center"
-                       style="background: rgba(251, 146, 60, 0.1); 
+                       style="background: rgba(255, 255, 255, 0.03); 
+                              backdrop-filter: blur(8px);
                               border: 1px solid rgba(251, 146, 60, 0.3);">
                     <div class="flex items-center justify-center gap-2 text-orange-400">
                       <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -879,7 +885,8 @@ export class PartySystem extends LitElement {
                     
                     ${this.hostActivity ? html`
                       <div class="mt-3 p-2 rounded-md"
-                           style="background: rgba(0, 0, 0, 0.3); 
+                           style="background: rgba(255, 255, 255, 0.02); 
+                                  backdrop-filter: blur(8px);
                                   border: 1px solid rgba(251, 146, 60, 0.2);">
                         <div class="text-xs text-orange-300 font-medium">
                           Host Activity
@@ -902,7 +909,7 @@ export class PartySystem extends LitElement {
                   <div class="text-xs text-gray-500 mb-1">Party Members</div>
                   ${this.members.map((member) => html`
                     <div class="flex items-center justify-between p-2 rounded-lg transition-all"
-                         style="background: rgba(0, 0, 0, 0.2); border: 1px solid ${member.id === this.myId ? 'rgba(74, 95, 58, 0.4)' : 'rgba(74, 95, 58, 0.15)'};">
+                         style="background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(8px); border: 1px solid ${member.id === this.myId ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.08)'}; box-shadow: ${member.id === this.myId ? '0 0 0 1px rgba(74, 95, 58, 0.3)' : 'none'};">
                       <div class="flex items-center gap-2.5">
                         <div class="relative">
                           <img src="/flags/${member.flag || 'xx'}.svg" 
@@ -938,7 +945,8 @@ export class PartySystem extends LitElement {
                 <!-- Leave Party Button -->
                 <button @click=${this.leaveParty}
                         class="w-full px-3 py-2 mt-2 text-gray-300 font-medium rounded-lg transition-all duration-300 hover:text-white"
-                        style="background: rgba(239, 68, 68, 0.1);
+                        style="background: rgba(255, 255, 255, 0.03);
+                               backdrop-filter: blur(8px);
                                border: 1px solid rgba(239, 68, 68, 0.3);">
                   Leave Party
                 </button>

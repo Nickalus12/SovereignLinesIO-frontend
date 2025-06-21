@@ -4,7 +4,7 @@
 
 Sovereign Lines is an online real-time strategy game focused on territorial control and alliance building. Players compete to expand their territory, build structures, and form strategic alliances in various maps based on real-world geography.
 
-This is a fork/rewrite of OpenFront.io. Credit to [https://github.com/OpenFrontIO.]
+This is a fork/rewrite of WarFront.io. Credit to https://github.com/WarFrontIO.
 
 # Sovereign Lines - Licensing
 
@@ -31,8 +31,8 @@ This project is proprietary software. All rights reserved.
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/Nickalus12/SovereignLinesIO-frontend.git
-   cd SovereignLinesIO-frontend
+   git clone https://github.com/sovereign-lines/sovereign-lines.git
+   cd sovereign-lines
    ```
 
 2. **Install dependencies**
@@ -135,7 +135,7 @@ How to help?
 
 ### Project Governance
 
-- The project maintainer ([Nickalus](https://github.com/Nickalus12)) has final authority on all code changes and design decisions
+- The project maintainer ([Nickalus](https://github.com/Nickalus12/)) has final authority on all code changes and design decisions
 - All pull requests require maintainer approval before merging
 - The maintainer reserves the right to reject contributions that don't align with the project's vision or quality standards
 

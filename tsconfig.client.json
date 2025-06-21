@@ -1,0 +1,20 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext", 
+    "moduleResolution": "node",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "types": ["node"]
+  },
+  "include": [
+    "src/client/**/*",
+    "src/core/**/*",
+    "global.d.ts"
+  ],
+  "exclude": [
+    "src/server/**/*",
+    "tests/**/*",
+    "node_modules"
+  ]
+}

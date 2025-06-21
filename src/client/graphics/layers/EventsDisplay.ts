@@ -78,7 +78,7 @@ export class EventsDisplay extends LitElement implements Layer {
   @state() private outgoingAttacks: AttackUpdate[] = [];
   @state() private outgoingLandAttacks: AttackUpdate[] = [];
   @state() private outgoingBoats: UnitView[] = [];
-  @state() private _hidden: boolean = false;
+  @state() private _hidden: boolean = true;
   @state() private _isVisible: boolean = false;
   @state() private newEvents: number = 0;
   @state() private latestGoldAmount: bigint | null = null;
@@ -417,18 +417,33 @@ export class EventsDisplay extends LitElement implements Layer {
 
       this.addEvent({
         description:
-          `You broke your alliance with ${betrayed.name()}, making you a TRAITOR ` +
-          `(${malusPercent}% defense debuff for ${durationText})`,
+          `⚠️ You broke your alliance with ${betrayed.name()}, making you a TRAITOR! ` +
+          `You have ${malusPercent}% REDUCED DEFENSE for ${durationText}!`,
         type: MessageType.ALLIANCE_BROKEN,
         highlight: true,
         createdAt: this.game.ticks(),
         focusID: update.betrayedID,
       });
     } else if (betrayed === myPlayer) {
+      const malusPercent = Math.round(
+        (1 - this.game.config().traitorDefenseDebuff()) * 100,
+      );
       this.addEvent({
-        description: `${traitor.name()} broke their alliance with you`,
+        description: `⚠️ ${traitor.name()} BETRAYED you! They are now a TRAITOR with ${malusPercent}% reduced defense!`,
         type: MessageType.ALLIANCE_BROKEN,
         highlight: true,
+        createdAt: this.game.ticks(),
+        focusID: update.traitorID,
+      });
+    } else if (traitor !== myPlayer && betrayed !== myPlayer) {
+      // Notify other players about the betrayal
+      const malusPercent = Math.round(
+        (1 - this.game.config().traitorDefenseDebuff()) * 100,
+      );
+      this.addEvent({
+        description: `${traitor.name()} betrayed ${betrayed.name()} and is now a TRAITOR (-${malusPercent}% defense)!`,
+        type: MessageType.ALLIANCE_BROKEN,
+        highlight: false,
         createdAt: this.game.ticks(),
         focusID: update.traitorID,
       });
@@ -769,31 +784,34 @@ export class EventsDisplay extends LitElement implements Layer {
       <!-- Events Toggle (when hidden) -->
       ${this._hidden
         ? html`
-            <div class="relative w-fit lg:bottom-2.5 lg:right-2.5 z-50">
+            <div class="relative w-fit lg:bottom-2.5 lg:right-2.5 z-40">
               ${this.renderButton({
                 content: html`
-                  Events
-                  <span
-                    class="${this.newEvents
-                      ? ""
-                      : "hidden"} inline-block px-2 bg-red-500 rounded-xl text-sm"
-                    >${this.newEvents}</span
-                  >
+                  <div class="flex items-center gap-2">
+                    <span class="text-sm lg:text-base">📋</span>
+                    <span>Events</span>
+                    <span
+                      class="${this.newEvents
+                        ? ""
+                        : "hidden"} inline-block px-1.5 py-0.5 bg-red-500 rounded-full text-xs font-bold min-w-[20px] text-center"
+                      >${this.newEvents}</span
+                    >
+                  </div>
                 `,
                 onClick: this.toggleHidden,
                 className:
-                  "text-white cursor-pointer pointer-events-auto w-fit p-2 lg:p-3 rounded-md bg-gray-800/70 backdrop-blur",
+                  "sg-button sg-button--small cursor-pointer pointer-events-auto px-3 py-2 lg:px-4 lg:py-2.5",
               })}
             </div>
           `
         : html`
             <!-- Main Events Display -->
             <div
-              class="relative w-full lg:bottom-2.5 lg:right-2.5 z-50 lg:w-96 backdrop-blur"
+              class="relative w-full lg:bottom-2.5 lg:right-2.5 z-40 lg:w-96 sg-panel"
             >
               <!-- Button Bar -->
               <div
-                class="w-full p-2 lg:p-3 rounded-t-none md:rounded-t-md bg-gray-800/70"
+                class="w-full p-2 lg:p-3 rounded-t-none md:rounded-t-md"
               >
                 <div class="flex justify-between items-center">
                   <div class="flex gap-4">
@@ -879,11 +897,11 @@ export class EventsDisplay extends LitElement implements Layer {
 
               <!-- Content Area -->
               <div
-                class="rounded-b-none md:rounded-b-md bg-gray-800/70 max-h-[30vh] flex flex-col-reverse overflow-y-auto w-full h-full"
+                class="rounded-b-none md:rounded-b-md max-h-[30vh] flex flex-col-reverse overflow-y-auto w-full h-full sg-card-inner"
               >
                 <div>
                   <table
-                    class="w-full max-h-none border-collapse text-white shadow-lg text-xs sm:text-sm lg:text-base"
+                    class="w-full max-h-none border-collapse sg-text-primary text-xs sm:text-sm lg:text-base"
                     style="pointer-events: auto;"
                   >
                     <tbody>
@@ -891,7 +909,7 @@ export class EventsDisplay extends LitElement implements Layer {
                         (event, index) => html`
                           <tr>
                             <td
-                              class="p-1 sm:px-2 sm:py-1 lg:px-2 lg:py-1 text-left ${getMessageTypeClasses(
+                              class="p-1 sm:px-2 sm:py-1 lg:px-2 lg:py-1 text-left transition-colors duration-200 hover:bg-black/20 ${getMessageTypeClasses(
                                 event.type,
                               )}"
                             >
@@ -923,14 +941,14 @@ export class EventsDisplay extends LitElement implements Layer {
                                       ${event.buttons.map(
                                         (btn) => html`
                                           <button
-                                            class="inline-block px-3 py-1 text-white rounded text-md md:text-sm cursor-pointer transition-colors duration-300
+                                            class="inline-block px-3 py-1 sg-text-primary rounded text-md md:text-sm cursor-pointer transition-all duration-300 border
                             ${btn.className.includes("btn-info")
-                                              ? "bg-blue-500 hover:bg-blue-600"
+                                              ? "bg-blue-500/20 border-blue-400/30 hover:bg-blue-500/30 hover:border-blue-400/50"
                                               : btn.className.includes(
                                                     "btn-gray",
                                                   )
-                                                ? "bg-gray-500 hover:bg-gray-600"
-                                                : "bg-green-600 hover:bg-green-700"}"
+                                                ? "bg-gray-500/20 border-gray-400/30 hover:bg-gray-500/30 hover:border-gray-400/50"
+                                                : "bg-green-600/20 border-green-500/30 hover:bg-green-600/30 hover:border-green-500/50"}"
                                             @click=${() => {
                                               btn.action();
                                               if (!btn.preventClose) {
@@ -962,7 +980,7 @@ export class EventsDisplay extends LitElement implements Layer {
                       ${this.incomingAttacks.length > 0
                         ? html`
                             <tr class="lg:px-2 lg:py-1 p-1">
-                              <td class="lg:px-2 lg:py-1 p-1 text-left">
+                              <td class="lg:px-2 lg:py-1 p-1 text-left transition-colors duration-200 hover:bg-black/20">
                                 ${this.renderIncomingAttacks()}
                               </td>
                             </tr>
@@ -973,7 +991,7 @@ export class EventsDisplay extends LitElement implements Layer {
                       ${this.outgoingAttacks.length > 0
                         ? html`
                             <tr class="lg:px-2 lg:py-1 p-1">
-                              <td class="lg:px-2 lg:py-1 p-1 text-left">
+                              <td class="lg:px-2 lg:py-1 p-1 text-left transition-colors duration-200 hover:bg-black/20">
                                 ${this.renderOutgoingAttacks()}
                               </td>
                             </tr>
@@ -984,7 +1002,7 @@ export class EventsDisplay extends LitElement implements Layer {
                       ${this.outgoingLandAttacks.length > 0
                         ? html`
                             <tr class="lg:px-2 lg:py-1 p-1">
-                              <td class="lg:px-2 lg:py-1 p-1 text-left">
+                              <td class="lg:px-2 lg:py-1 p-1 text-left transition-colors duration-200 hover:bg-black/20">
                                 ${this.renderOutgoingLandAttacks()}
                               </td>
                             </tr>
@@ -995,7 +1013,7 @@ export class EventsDisplay extends LitElement implements Layer {
                       ${this.outgoingBoats.length > 0
                         ? html`
                             <tr class="lg:px-2 lg:py-1 p-1">
-                              <td class="lg:px-2 lg:py-1 p-1 text-left">
+                              <td class="lg:px-2 lg:py-1 p-1 text-left transition-colors duration-200 hover:bg-black/20">
                                 ${this.renderBoats()}
                               </td>
                             </tr>
@@ -1011,7 +1029,7 @@ export class EventsDisplay extends LitElement implements Layer {
                         ? html`
                             <tr>
                               <td
-                                class="lg:px-2 lg:py-1 p-1 min-w-72 text-left"
+                                class="lg:px-2 lg:py-1 p-1 min-w-72 text-left sg-text-muted"
                               >
                                 &nbsp;
                               </td>

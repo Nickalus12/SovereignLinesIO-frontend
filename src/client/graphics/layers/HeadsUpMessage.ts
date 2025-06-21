@@ -21,14 +21,24 @@ export class HeadsUpMessage extends LitElement implements Layer {
   }
 
   tick() {
-    if (!this.game.inSpawnPhase()) {
+    if (!this.game) return;
+    
+    // Hide message if spawn phase ended or player has spawned
+    const myPlayer = this.game.myPlayer();
+    if (!this.game.inSpawnPhase() || (myPlayer && myPlayer.isAlive())) {
       this.isVisible = false;
       this.requestUpdate();
     }
   }
 
   render() {
-    if (!this.isVisible) {
+    if (!this.isVisible || !this.game) {
+      return html``;
+    }
+    
+    // Don't show if player has already spawned
+    const myPlayer = this.game.myPlayer();
+    if (myPlayer && myPlayer.isAlive()) {
       return html``;
     }
 

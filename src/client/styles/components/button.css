@@ -1,62 +1,72 @@
 .c-button {
-  background: linear-gradient(180deg, #4a5f3a 0%, #2d3b25 100%);
+  background: linear-gradient(135deg, rgba(90, 127, 58, 0.5) 0%, rgba(74, 95, 58, 0.5) 100%);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
   color: #fff;
   cursor: pointer;
   outline: none;
   display: inline-block;
   font-size: 16px;
-  border: 2px solid #2d3b25;
+  border: 1px solid rgba(90, 127, 58, 0.4);
   text-align: center;
-  padding: 0.8rem 1rem;
-  border-radius: 4px;
-  transition: var(--transition);
+  padding: 0.9rem 1.5rem;
+  border-radius: 10px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
   font-weight: 600;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 
+              0 0 0 1px rgba(143, 188, 143, 0.1) inset,
+              0 0 20px rgba(90, 127, 58, 0.15);
   position: relative;
   overflow: hidden;
 
   @media (min-width: 1024px) {
-    font-size: 18px;
+    font-size: 17px;
   }
 }
 
 .c-button:hover,
 .c-button:active,
 .c-button:focus {
-  background: linear-gradient(180deg, #5a6f4a 0%, #3a4a30 100%);
-  border-color: #3a4a30;
-  transition: var(--transition);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  background: linear-gradient(135deg, rgba(106, 143, 74, 0.6) 0%, rgba(90, 111, 58, 0.6) 100%);
+  border-color: rgba(106, 143, 74, 0.6);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 
+              0 0 40px rgba(90, 127, 58, 0.3),
+              0 0 0 1px rgba(143, 188, 143, 0.2) inset;
 }
 
 .c-button:disabled {
-  background: linear-gradient(180deg, #3a3a3a 0%, #2a2a2a 100%);
-  border-color: #2a2a2a;
-  opacity: 0.6;
+  background: linear-gradient(135deg, rgba(74, 74, 74, 0.1) 0%, rgba(61, 61, 61, 0.1) 100%);
+  backdrop-filter: blur(8px);
+  opacity: 0.5;
   cursor: not-allowed;
-  transition: var(--transition);
-  box-shadow: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
   transform: none;
+  border-color: rgba(255, 255, 255, 0.05);
 }
 
 .c-button--secondary {
-  background: linear-gradient(180deg, rgba(74, 95, 58, 0.2) 0%, rgba(45, 59, 37, 0.2) 100%);
-  color: #4a5f3a;
-  border-color: #4a5f3a;
-  backdrop-filter: blur(4px);
+  background: linear-gradient(135deg, rgba(74, 95, 58, 0.2) 0%, rgba(74, 95, 58, 0.15) 100%);
+  color: #d4e0c4;
+  border: 1px solid rgba(74, 95, 58, 0.3);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
 }
 
 .c-button--secondary:hover,
 .c-button--secondary:active,
 .c-button--secondary:focus {
-  background: linear-gradient(180deg, rgba(74, 95, 58, 0.3) 0%, rgba(45, 59, 37, 0.3) 100%);
-  border-color: #5a6f4a;
-  color: #5a6f4a;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  background: linear-gradient(135deg, rgba(74, 95, 58, 0.3) 0%, rgba(74, 95, 58, 0.25) 100%);
+  border-color: rgba(90, 127, 58, 0.5);
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 
+              0 0 30px rgba(74, 95, 58, 0.2),
+              0 0 0 1px rgba(143, 188, 143, 0.1) inset;
 }
 
 .c-button--block {
@@ -93,5 +103,7 @@
 /* Subtle press effect */
 .c-button:active {
   transform: translateY(0);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), inset 0 1px 2px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2), 
+              inset 0 1px 2px rgba(0, 0, 0, 0.1),
+              0 0 0 1px rgba(255, 255, 255, 0.05) inset;
 }

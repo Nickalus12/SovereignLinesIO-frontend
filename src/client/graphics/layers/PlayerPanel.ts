@@ -207,6 +207,25 @@ export class PlayerPanel extends LitElement implements Layer {
     return time.trim();
   }
 
+  private renderTraitorTimer(player: PlayerView) {
+    // Calculate remaining traitor time
+    const traitorDuration = this.g.config().traitorDuration();
+    const currentTick = this.g.ticks();
+    const playerData = this.g.allPlayers().get(player.id());
+    
+    if (!playerData || !playerData.isTraitor) return html``;
+    
+    // We need to estimate when they became a traitor based on the game state
+    // For now, show the defense debuff percentage
+    const debuffPercent = Math.round((1 - this.g.config().traitorDefenseDebuff()) * 100);
+    
+    return html`
+      <span class="text-sm text-yellow-200">
+        -${debuffPercent}% defense
+      </span>
+    `;
+  }
+
   render() {
     if (!this.isVisible) {
       return html``;
@@ -235,238 +254,222 @@ export class PlayerPanel extends LitElement implements Layer {
 
     return html`
       <div
-        class="fixed inset-0 flex items-center justify-center z-50 pointer-events-none overflow-auto"
+        class="sg-modal-backdrop flex items-center justify-center overflow-auto"
         @contextmenu=${(e) => e.preventDefault()}
         @wheel=${(e) => e.stopPropagation()}
       >
         <div
-          class="pointer-events-auto max-h-[90vh] overflow-y-auto min-w-[240px] w-auto px-4 py-2"
+          class="sg-panel pointer-events-auto max-h-[90vh] overflow-y-auto sg-scrollable min-w-[320px] w-auto m-4"
         >
-          <div
-            class="bg-opacity-60 bg-gray-900 p-1 lg:p-2 rounded-lg backdrop-blur-md relative w-full mt-2"
+          <!-- Close button -->
+          <button
+            @click=${this.handleClose}
+            class="sg-button--close"
+            style="top: 1rem; right: 1rem; transform: none;"
           >
-            <!-- Close button -->
-            <button
-              @click=${this.handleClose}
-              class="absolute -top-2 -right-2 w-6 h-6 flex items-center justify-center
-                   bg-red-500 hover:bg-red-600 text-white rounded-full
-                   text-sm font-bold transition-colors"
-            >
-              ✕
-            </button>
+            ✕
+          </button>
 
-            <div class="flex flex-col gap-2 min-w-[240px]">
-              <!-- Name section -->
-              <div class="flex items-center gap-1 lg:gap-2">
-                <div
-                  class="px-4 h-8 lg:h-10 flex items-center justify-center
-                       bg-opacity-50 bg-gray-700 text-opacity-90 text-white
-                       rounded text-sm lg:text-xl w-full"
-                >
-                  ${other?.name()}
-                </div>
-              </div>
-
+          <!-- Header -->
+          <div class="sg-panel-header">
+            <h2 class="sg-panel-title">${other?.name()}</h2>
+          </div>
+          
+          <!-- Content -->
+          <div class="sg-panel-content">
+            <div class="flex flex-col gap-4">
               <!-- Resources section -->
-              <div class="grid grid-cols-2 gap-2">
-                <div class="flex flex-col gap-1">
-                  <!-- Gold -->
-                  <div class="text-white text-opacity-80 text-sm px-2">
+              <div class="sg-grid sg-grid--2 gap-3">
+                <div class="sg-card p-3 text-center">
+                  <div class="sg-text-muted text-sm mb-2">
                     ${translateText("player_panel.gold")}
                   </div>
-                  <div
-                    class="bg-opacity-50 bg-gray-700 rounded p-2 text-white"
-                    translate="no"
-                  >
-                    ${renderNumber(other.gold() || 0)}
+                  <div class="sg-text-primary font-bold text-lg" translate="no">
+                    💰 ${renderNumber(other.gold() || 0)}
                   </div>
                 </div>
-                <div class="flex flex-col gap-1">
-                  <!-- Troops -->
-                  <div class="text-white text-opacity-80 text-sm px-2">
+                <div class="sg-card p-3 text-center">
+                  <div class="sg-text-muted text-sm mb-2">
                     ${translateText("player_panel.troops")}
                   </div>
-                  <div
-                    class="bg-opacity-50 bg-gray-700 rounded p-2 text-white"
-                    translate="no"
-                  >
-                    ${renderTroops(other.troops() || 0)}
+                  <div class="sg-text-primary font-bold text-lg" translate="no">
+                    ⚔️ ${renderTroops(other.troops() || 0)}
                   </div>
                 </div>
               </div>
 
-              <!-- Attitude section -->
-              <div class="flex flex-col gap-1">
-                <div class="text-white text-opacity-80 text-sm px-2">
-                  ${translateText("player_panel.traitor")}
+              <!-- Status Cards -->
+              <div class="sg-grid sg-grid--2 gap-3">
+                <!-- Traitor Status -->
+                <div class="sg-card p-3 ${other.isTraitor() ? 'border-red-500 bg-red-900/20' : ''}">
+                  <div class="sg-text-muted text-sm mb-2">
+                    ${translateText("player_panel.traitor")}
+                  </div>
+                  <div class="sg-text-primary">
+                    ${other.isTraitor()
+                      ? html`
+                          <div class="flex flex-col gap-1">
+                            <span class="font-bold text-red-400">⚠️ ${translateText("player_panel.yes")}</span>
+                            ${this.renderTraitorTimer(other)}
+                          </div>
+                        `
+                      : html`<span class="text-green-400">✅ ${translateText("player_panel.no")}</span>`}
+                  </div>
                 </div>
-                <div class="bg-opacity-50 bg-gray-700 rounded p-2 text-white">
-                  ${other.isTraitor()
-                    ? translateText("player_panel.yes")
-                    : translateText("player_panel.no")}
+
+                <!-- Betrayals -->
+                <div class="sg-card p-3 text-center">
+                  <div class="sg-text-muted text-sm mb-2">
+                    ${translateText("player_panel.betrayals")}
+                  </div>
+                  <div class="sg-text-primary font-bold text-lg">
+                    🗡️ ${other.data.betrayals ?? 0}
+                  </div>
                 </div>
               </div>
 
-              <!-- Betrayals -->
-              <div class="flex flex-col gap-1">
-                <div class="text-white text-opacity-80 text-sm px-2">
-                  ${translateText("player_panel.betrayals")}
-                </div>
-                <div class="bg-opacity-50 bg-gray-700 rounded p-2 text-white">
-                  ${other.data.betrayals ?? 0}
-                </div>
-              </div>
-
-              <!-- Embargo -->
-              <div class="flex flex-col gap-1">
-                <div class="text-white text-opacity-80 text-sm px-2">
+              <!-- Embargo Status -->
+              <div class="sg-card p-3">
+                <div class="sg-text-muted text-sm mb-2">
                   ${translateText("player_panel.embargo")}
                 </div>
-                <div class="bg-opacity-50 bg-gray-700 rounded p-2 text-white">
+                <div class="sg-text-primary">
                   ${other.hasEmbargoAgainst(myPlayer)
-                    ? translateText("player_panel.yes")
-                    : translateText("player_panel.no")}
+                    ? html`<span class="text-red-400">🚫 ${translateText("player_panel.yes")}</span>`
+                    : html`<span class="text-green-400">✅ ${translateText("player_panel.no")}</span>`}
                 </div>
               </div>
 
               <!-- Alliances -->
-              <div class="flex flex-col gap-1">
-                <div class="text-white text-opacity-80 text-sm px-2">
-                  ${translateText("player_panel.alliances")}
-                  (${other.allies().length})
+              <div class="sg-card p-3">
+                <div class="sg-text-muted text-sm mb-2">
+                  ${translateText("player_panel.alliances")} (${other.allies().length})
                 </div>
-                <div
-                  class="bg-opacity-50 bg-gray-700 rounded p-2 text-white max-w-72 max-h-20 overflow-y-auto"
-                  translate="no"
-                >
+                <div class="sg-text-primary max-h-20 overflow-y-auto sg-scrollable" translate="no">
                   ${other.allies().length > 0
-                    ? other
-                        .allies()
-                        .map((p) => p.name())
-                        .join(", ")
-                    : translateText("player_panel.none")}
+                    ? html`
+                        <div class="flex flex-wrap gap-1">
+                          ${other.allies().map(p => html`
+                            <span class="px-2 py-1 bg-blue-500/20 text-blue-300 rounded text-sm">
+                              🤝 ${p.name()}
+                            </span>
+                          `)}
+                        </div>
+                      `
+                    : html`<span class="text-gray-400">🔹 ${translateText("player_panel.none")}</span>`}
                 </div>
               </div>
 
+              <!-- Alliance Timer -->
               ${this.allianceExpiryText !== null
                 ? html`
-                    <div class="flex flex-col gap-1">
-                      <div class="text-white text-opacity-80 text-sm px-2">
+                    <div class="sg-card p-3 border-blue-500 bg-blue-900/20">
+                      <div class="sg-text-muted text-sm mb-2">
                         ${translateText("player_panel.alliance_time_remaining")}
                       </div>
-                      <div
-                        class="bg-opacity-50 bg-gray-700 rounded p-2 text-white"
-                      >
-                        ${this.allianceExpiryText}
+                      <div class="sg-text-primary font-bold">
+                        ⏰ ${this.allianceExpiryText}
                       </div>
                     </div>
                   `
                 : ""}
 
-              <!-- Action buttons -->
-              <div class="flex justify-center gap-2">
+              <!-- Action Buttons -->
+              <div class="flex flex-wrap justify-center gap-2">
+                <!-- Chat -->
                 <button
                   @click=${(e) => this.handleChat(e, myPlayer, other)}
-                  class="w-10 h-10 flex items-center justify-center
-                           bg-opacity-50 bg-gray-700 hover:bg-opacity-70
-                           text-white rounded-lg transition-colors"
+                  class="sg-button sg-button--small p-3"
+                  title="Chat"
                 >
-                  <img src=${chatIcon} alt="Target" class="w-6 h-6" />
+                  <img src=${chatIcon} alt="Chat" class="w-6 h-6" />
                 </button>
+                
+                <!-- Target -->
                 ${canTarget
                   ? html`<button
                       @click=${(e) => this.handleTargetClick(e, other)}
-                      class="w-10 h-10 flex items-center justify-center
-                           bg-opacity-50 bg-gray-700 hover:bg-opacity-70
-                           text-white rounded-lg transition-colors"
+                      class="sg-button sg-button--small sg-button--danger p-3"
+                      title="Target"
                     >
                       <img src=${targetIcon} alt="Target" class="w-6 h-6" />
                     </button>`
                   : ""}
+                
+                <!-- Break Alliance -->
                 ${canBreakAlliance
                   ? html`<button
-                      @click=${(e) =>
-                        this.handleBreakAllianceClick(e, myPlayer, other)}
-                      class="w-10 h-10 flex items-center justify-center
-                           bg-opacity-50 bg-gray-700 hover:bg-opacity-70
-                           text-white rounded-lg transition-colors"
+                      @click=${(e) => this.handleBreakAllianceClick(e, myPlayer, other)}
+                      class="sg-button sg-button--small sg-button--danger p-3"
+                      title="Break Alliance"
                     >
-                      <img
-                        src=${traitorIcon}
-                        alt="Break Alliance"
-                        class="w-6 h-6"
-                      />
+                      <img src=${traitorIcon} alt="Break Alliance" class="w-6 h-6" />
                     </button>`
                   : ""}
+                
+                <!-- Send Alliance -->
                 ${canSendAllianceRequest
                   ? html`<button
-                      @click=${(e) =>
-                        this.handleAllianceClick(e, myPlayer, other)}
-                      class="w-10 h-10 flex items-center justify-center
-                           bg-opacity-50 bg-gray-700 hover:bg-opacity-70
-                           text-white rounded-lg transition-colors"
+                      @click=${(e) => this.handleAllianceClick(e, myPlayer, other)}
+                      class="sg-button sg-button--small sg-button--success p-3"
+                      title="Send Alliance"
                     >
                       <img src=${allianceIcon} alt="Alliance" class="w-6 h-6" />
                     </button>`
                   : ""}
+                
+                <!-- Donate Troops -->
                 ${canDonate
                   ? html`<button
-                      @click=${(e) =>
-                        this.handleDonateTroopClick(e, myPlayer, other)}
-                      class="w-10 h-10 flex items-center justify-center
-                           bg-opacity-50 bg-gray-700 hover:bg-opacity-70
-                           text-white rounded-lg transition-colors"
+                      @click=${(e) => this.handleDonateTroopClick(e, myPlayer, other)}
+                      class="sg-button sg-button--small sg-button--primary p-3"
+                      title="Donate Troops"
                     >
-                      <img
-                        src=${donateTroopIcon}
-                        alt="Donate"
-                        class="w-6 h-6"
-                      />
+                      <img src=${donateTroopIcon} alt="Donate Troops" class="w-6 h-6" />
                     </button>`
                   : ""}
+                
+                <!-- Donate Gold -->
                 ${canDonate
                   ? html`<button
-                      @click=${(e) =>
-                        this.handleDonateGoldClick(e, myPlayer, other)}
-                      class="w-10 h-10 flex items-center justify-center
-                          bg-opacity-50 bg-gray-700 hover:bg-opacity-70
-                          text-white rounded-lg transition-colors"
+                      @click=${(e) => this.handleDonateGoldClick(e, myPlayer, other)}
+                      class="sg-button sg-button--small sg-button--primary p-3"
+                      title="Donate Gold"
                     >
-                      <img src=${donateGoldIcon} alt="Donate" class="w-6 h-6" />
+                      <img src=${donateGoldIcon} alt="Donate Gold" class="w-6 h-6" />
                     </button>`
                   : ""}
+                
+                <!-- Send Emoji -->
                 ${canSendEmoji
                   ? html`<button
                       @click=${(e) => this.handleEmojiClick(e, myPlayer, other)}
-                      class="w-10 h-10 flex items-center justify-center
-                           bg-opacity-50 bg-gray-700 hover:bg-opacity-70
-                           text-white rounded-lg transition-colors"
+                      class="sg-button sg-button--small p-3"
+                      title="Send Emoji"
                     >
                       <img src=${emojiIcon} alt="Emoji" class="w-6 h-6" />
                     </button>`
                   : ""}
               </div>
-              ${canEmbargo && other !== myPlayer
-                ? html`<button
-                    @click=${(e) => this.handleEmbargoClick(e, myPlayer, other)}
-                    class="w-100 h-10 flex items-center justify-center
-                          bg-opacity-50 bg-gray-700 hover:bg-opacity-70
-                          text-white rounded-lg transition-colors"
-                  >
-                    ${translateText("player_panel.stop_trade")}
-                  </button>`
-                : ""}
-              ${!canEmbargo && other !== myPlayer
-                ? html`<button
-                    @click=${(e) =>
-                      this.handleStopEmbargoClick(e, myPlayer, other)}
-                    class="w-100 h-10 flex items-center justify-center
-                          bg-opacity-50 bg-gray-700 hover:bg-opacity-70
-                          text-white rounded-lg transition-colors"
-                  >
-                    ${translateText("player_panel.start_trade")}
-                  </button>`
-                : ""}
+              
+              <!-- Trade Controls -->
+              ${other !== myPlayer ? html`
+                <div class="mt-2">
+                  ${canEmbargo
+                    ? html`<button
+                        @click=${(e) => this.handleEmbargoClick(e, myPlayer, other)}
+                        class="sg-button sg-button--danger w-full"
+                      >
+                        🚫 ${translateText("player_panel.stop_trade")}
+                      </button>`
+                    : html`<button
+                        @click=${(e) => this.handleStopEmbargoClick(e, myPlayer, other)}
+                        class="sg-button sg-button--success w-full"
+                      >
+                        ✅ ${translateText("player_panel.start_trade")}
+                      </button>`}
+                </div>
+              ` : ''}
             </div>
           </div>
         </div>

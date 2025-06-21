@@ -1,0 +1,583 @@
+/* =================================================================
+   SOVEREIGN LINES - IN-GAME UI THEME
+   Matches the menu/landing page aesthetic
+   ================================================================= */
+
+/* Base Variables for In-Game Theme */
+:root {
+  /* Primary Green Theme Colors */
+  --sg-primary: #5a7f3a;
+  --sg-primary-dark: #4a5f3a; 
+  --sg-primary-light: #6a8f4a;
+  --sg-primary-bright: #7fa050;
+  
+  /* Glass/Backdrop Effects */
+  --sg-glass-bg: linear-gradient(135deg, rgba(20, 25, 20, 0.95) 0%, rgba(15, 20, 15, 0.98) 100%);
+  --sg-glass-border: rgba(74, 95, 58, 0.3);
+  --sg-glass-border-bright: rgba(74, 95, 58, 0.6);
+  --sg-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 80px rgba(74, 95, 58, 0.1);
+  
+  /* Text Colors */
+  --sg-text-primary: #d4e0c4;
+  --sg-text-secondary: #e0e0e0;
+  --sg-text-muted: rgba(212, 224, 196, 0.7);
+  
+  /* Button Gradients */
+  --sg-button-bg: linear-gradient(135deg, rgba(30, 35, 45, 0.9) 0%, rgba(25, 30, 40, 0.95) 100%);
+  --sg-button-hover: linear-gradient(135deg, rgba(74, 95, 58, 0.3) 0%, rgba(74, 95, 58, 0.15) 100%);
+  --sg-button-active: linear-gradient(135deg, rgba(74, 95, 58, 0.15) 0%, rgba(74, 95, 58, 0.1) 100%);
+  
+  /* Panel/Card Backgrounds */
+  --sg-panel-bg: linear-gradient(135deg, rgba(20, 25, 20, 0.8) 0%, rgba(15, 20, 15, 0.9) 100%);
+  --sg-card-bg: linear-gradient(135deg, rgba(30, 35, 45, 0.9) 0%, rgba(25, 30, 40, 0.95) 100%);
+  
+  /* Accents and Effects */
+  --sg-glow-primary: 0 0 20px rgba(74, 95, 58, 0.5);
+  --sg-glow-secondary: 0 0 12px rgba(74, 95, 58, 0.3);
+  --sg-shimmer: linear-gradient(45deg, #5a7f3a, #4a5f3a, #5a7f3a);
+}
+
+/* =================================================================
+   IN-GAME MODAL/PANEL BASE STYLES
+   ================================================================= */
+
+.sg-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(12px);
+  z-index: 9999;
+  animation: sg-backdrop-fade-in 0.3s ease-out;
+}
+
+@keyframes sg-backdrop-fade-in {
+  from { opacity: 0; backdrop-filter: blur(0); }
+  to { opacity: 1; backdrop-filter: blur(12px); }
+}
+
+.sg-panel {
+  background: var(--sg-glass-bg);
+  border: 1px solid var(--sg-glass-border);
+  border-radius: 16px;
+  box-shadow: var(--sg-glass-shadow);
+  backdrop-filter: blur(10px);
+  position: relative;
+  overflow: hidden;
+  animation: sg-panel-slide-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.sg-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100px;
+  background: radial-gradient(ellipse at top center, rgba(74, 95, 58, 0.15) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+@keyframes sg-panel-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.sg-panel-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--sg-glass-border);
+  background: linear-gradient(135deg, rgba(74, 95, 58, 0.15) 0%, rgba(74, 95, 58, 0.05) 100%);
+  border-radius: 16px 16px 0 0;
+  position: relative;
+}
+
+.sg-panel-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--sg-text-primary);
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  margin: 0;
+}
+
+.sg-panel-content {
+  padding: 1.8rem;
+  color: var(--sg-text-secondary);
+  position: relative;
+}
+
+/* =================================================================
+   BUTTONS
+   ================================================================= */
+
+.sg-button {
+  background: var(--sg-button-bg);
+  border: 2px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  color: var(--sg-text-secondary);
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  font-family: inherit;
+}
+
+.sg-button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, transparent 0%, rgba(74, 95, 58, 0.1) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.sg-button:hover {
+  transform: translateY(-2px) scale(1.02);
+  border-color: var(--sg-glass-border-bright);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), var(--sg-glow-secondary);
+  background: var(--sg-button-hover);
+}
+
+.sg-button:hover::before {
+  opacity: 1;
+}
+
+.sg-button:active {
+  transform: translateY(0) scale(1);
+  background: var(--sg-button-active);
+}
+
+.sg-button:disabled {
+  background: linear-gradient(135deg, rgba(60, 60, 60, 0.3) 0%, rgba(50, 50, 50, 0.3) 100%);
+  border-color: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.3);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.sg-button:disabled::before {
+  opacity: 0;
+}
+
+/* Button Sizes */
+.sg-button--small {
+  padding: 8px 16px;
+  font-size: 14px;
+  border-radius: 8px;
+}
+
+.sg-button--medium {
+  padding: 12px 20px;
+  font-size: 16px;
+}
+
+.sg-button--large {
+  padding: 16px 24px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* Button Variants */
+.sg-button--primary {
+  background: linear-gradient(135deg, var(--sg-primary) 0%, var(--sg-primary-dark) 100%);
+  border-color: var(--sg-primary);
+  color: white;
+  box-shadow: 0 4px 16px rgba(74, 95, 58, 0.3);
+}
+
+.sg-button--primary:hover {
+  background: linear-gradient(135deg, var(--sg-primary-light) 0%, var(--sg-primary) 100%);
+  box-shadow: 0 6px 24px rgba(74, 95, 58, 0.4), var(--sg-glow-primary);
+}
+
+.sg-button--success {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  border-color: #22c55e;
+  color: white;
+}
+
+.sg-button--danger {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  border-color: #ef4444;
+  color: white;
+}
+
+.sg-button--close {
+  position: absolute;
+  top: 1.2rem;
+  right: 1.2rem;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.sg-button--close:hover {
+  background: rgba(255, 67, 67, 0.3);
+  border-color: #ff4343;
+  transform: translateY(-50%) scale(1.1);
+  color: white;
+}
+
+/* =================================================================
+   CARDS AND SECTIONS
+   ================================================================= */
+
+.sg-card {
+  background: var(--sg-card-bg);
+  border: 2px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 16px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.sg-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, transparent 0%, rgba(74, 95, 58, 0.1) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.sg-card:hover {
+  transform: translateY(-3px) scale(1.02);
+  border-color: var(--sg-glass-border-bright);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), var(--sg-glow-secondary);
+}
+
+.sg-card:hover::before {
+  opacity: 1;
+}
+
+.sg-card--selected {
+  border-color: var(--sg-primary);
+  background: linear-gradient(135deg, rgba(74, 95, 58, 0.15) 0%, rgba(74, 95, 58, 0.1) 100%);
+  box-shadow: 0 4px 16px rgba(74, 95, 58, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.sg-card--selected::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: var(--sg-shimmer);
+  border-radius: 12px;
+  opacity: 0.3;
+  z-index: -1;
+  animation: sg-shimmer 3s ease-in-out infinite;
+}
+
+@keyframes sg-shimmer {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.5; }
+}
+
+/* =================================================================
+   FORM ELEMENTS
+   ================================================================= */
+
+.sg-input {
+  background: rgba(0, 0, 0, 0.3);
+  border: 2px solid var(--sg-glass-border);
+  border-radius: 10px;
+  color: var(--sg-text-primary);
+  padding: 12px 16px;
+  font-size: 16px;
+  font-family: inherit;
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+.sg-input:focus {
+  outline: none;
+  border-color: var(--sg-primary);
+  box-shadow: 0 0 16px rgba(74, 95, 58, 0.3), inset 0 0 4px rgba(74, 95, 58, 0.1);
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.sg-input::placeholder {
+  color: var(--sg-text-muted);
+}
+
+/* =================================================================
+   LISTS AND GRIDS
+   ================================================================= */
+
+.sg-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.sg-grid--2 { grid-template-columns: repeat(2, 1fr); }
+.sg-grid--3 { grid-template-columns: repeat(3, 1fr); }
+.sg-grid--4 { grid-template-columns: repeat(4, 1fr); }
+
+.sg-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sg-list-item {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(74, 95, 58, 0.1);
+  border-radius: 8px;
+  padding: 12px 16px;
+  transition: all 0.2s ease;
+}
+
+.sg-list-item:hover {
+  background: rgba(74, 95, 58, 0.1);
+  border-color: rgba(74, 95, 58, 0.3);
+}
+
+/* =================================================================
+   TOOLTIPS AND OVERLAYS
+   ================================================================= */
+
+.sg-tooltip {
+  background: var(--sg-glass-bg);
+  border: 1px solid var(--sg-glass-border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 14px;
+  color: var(--sg-text-secondary);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  z-index: 10000;
+}
+
+/* =================================================================
+   SCROLLBARS
+   ================================================================= */
+
+.sg-scrollable::-webkit-scrollbar {
+  width: 8px;
+}
+
+.sg-scrollable::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.sg-scrollable::-webkit-scrollbar-thumb {
+  background: rgba(74, 95, 58, 0.3);
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+.sg-scrollable::-webkit-scrollbar-thumb:hover {
+  background: rgba(74, 95, 58, 0.5);
+}
+
+/* =================================================================
+   RESPONSIVE UTILITIES
+   ================================================================= */
+
+@media (max-width: 768px) {
+  .sg-panel {
+    margin: 10px;
+    border-radius: 12px;
+  }
+  
+  .sg-panel-header,
+  .sg-panel-content {
+    padding: 1rem;
+  }
+  
+  .sg-panel-title {
+    font-size: 18px;
+  }
+  
+  .sg-grid--responsive {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .sg-panel-header,
+  .sg-panel-content {
+    padding: 0.8rem;
+  }
+  
+  .sg-panel-title {
+    font-size: 16px;
+  }
+  
+  .sg-button {
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+}
+
+/* =================================================================
+   ANIMATIONS AND EFFECTS
+   ================================================================= */
+
+@keyframes sg-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes sg-glow {
+  0%, 100% { box-shadow: 0 0 5px rgba(74, 95, 58, 0.5); }
+  50% { box-shadow: 0 0 20px rgba(74, 95, 58, 0.8), 0 0 30px rgba(74, 95, 58, 0.4); }
+}
+
+.sg-animate-pulse {
+  animation: sg-pulse 2s ease-in-out infinite;
+}
+
+.sg-animate-glow {
+  animation: sg-glow 2s ease-in-out infinite;
+}
+
+/* =================================================================
+   UTILITY CLASSES
+   ================================================================= */
+
+.sg-text-center { text-align: center; }
+.sg-text-left { text-align: left; }
+.sg-text-right { text-align: right; }
+
+.sg-text-primary { color: var(--sg-text-primary); }
+.sg-text-secondary { color: var(--sg-text-secondary); }
+.sg-text-muted { color: var(--sg-text-muted); }
+
+.sg-flex { display: flex; }
+.sg-flex-col { flex-direction: column; }
+.sg-flex-center { align-items: center; justify-content: center; }
+.sg-flex-between { justify-content: space-between; }
+.sg-flex-around { justify-content: space-around; }
+
+.sg-gap-1 { gap: 4px; }
+.sg-gap-2 { gap: 8px; }
+.sg-gap-3 { gap: 12px; }
+.sg-gap-4 { gap: 16px; }
+.sg-gap-6 { gap: 24px; }
+
+.sg-p-2 { padding: 8px; }
+.sg-p-3 { padding: 12px; }
+.sg-p-4 { padding: 16px; }
+.sg-p-6 { padding: 24px; }
+
+.sg-m-2 { margin: 8px; }
+.sg-m-3 { margin: 12px; }
+.sg-m-4 { margin: 16px; }
+
+.sg-rounded { border-radius: 8px; }
+.sg-rounded-lg { border-radius: 12px; }
+.sg-rounded-xl { border-radius: 16px; }
+
+.sg-shadow { box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3); }
+.sg-shadow-lg { box-shadow: var(--sg-glass-shadow); }
+
+.sg-hidden { display: none !important; }
+.sg-visible { display: block !important; }
+
+/* =================================================================
+   Z-INDEX MANAGEMENT
+   ================================================================= */
+
+/* Proper z-index layering for in-game UI */
+.sg-modal-backdrop {
+  z-index: 10000;
+}
+
+.sg-panel {
+  z-index: 9999;
+}
+
+/* TopBar should be below other panels */
+.top-bar-panel {
+  z-index: 9995 !important;
+}
+
+/* Options menu should be high priority */
+.options-menu-panel {
+  z-index: 9998 !important;
+}
+
+/* Leaderboard should be medium priority */
+.leaderboard-panel {
+  z-index: 9997 !important;
+}
+
+/* Build menu should be highest */
+.build-menu-panel {
+  z-index: 9999 !important;
+}
+
+/* =================================================================
+   SPECIFIC COMPONENT OVERRIDES
+   ================================================================= */
+
+/* Override existing gray-based UI elements */
+.bg-gray-900,
+.bg-opacity-60.bg-gray-900 {
+  background: var(--sg-glass-bg) !important;
+  border: 1px solid var(--sg-glass-border) !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+.bg-gray-700,
+.bg-opacity-50.bg-gray-700 {
+  background: var(--sg-card-bg) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Button overrides */
+.bg-opacity-70.bg-gray-700 {
+  background: var(--sg-button-bg) !important;
+  border: 2px solid rgba(255, 255, 255, 0.08) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.bg-opacity-70.bg-gray-700:hover {
+  background: var(--sg-button-hover) !important;
+  border-color: var(--sg-glass-border-bright) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: var(--sg-glow-secondary) !important;
+}
+
+/* =================================================================
+   DYNAMIC POSITIONING ADJUSTMENTS
+   ================================================================= */
+
+/* Ensure panels don't overlap */
+@media (max-width: 1024px) {
+  .leaderboard {
+    top: 80px !important;
+    left: 10px !important;
+  }
+  
+  .options-menu {
+    top: 10px !important;
+    right: 10px !important;
+  }
+}
+
+/* Push leaderboard down when TopBar is visible */
+.top-bar-active + .leaderboard,
+.top-bar-active ~ .leaderboard {
+  top: 120px !important;
+}

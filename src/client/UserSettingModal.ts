@@ -22,6 +22,7 @@ export class UserSettingModal extends LitElement {
   @state() private showLanguageModal = false;
   @state() private currentLang = localStorage.getItem("lang") || "en";
   @state() private languageList: any[] = [];
+  @state() private countryUIExpanded = false;
 
   connectedCallback() {
     super.connectedCallback();
@@ -128,6 +129,26 @@ export class UserSettingModal extends LitElement {
     console.log("🙈 Anonymous Names:", enabled ? "ON" : "OFF");
   }
 
+  private toggleHideNationNames(e: CustomEvent<{ checked: boolean }>) {
+    const enabled = e.detail?.checked;
+    if (typeof enabled !== "boolean") return;
+
+    this.userSettings.set("settings.hideNationNames", enabled);
+    document.dispatchEvent(new CustomEvent("country-ui-settings-changed"));
+
+    console.log("🏳️ Hide Nation Names:", enabled ? "ON" : "OFF");
+  }
+
+  private toggleHideCrowns(e: CustomEvent<{ checked: boolean }>) {
+    const enabled = e.detail?.checked;
+    if (typeof enabled !== "boolean") return;
+
+    this.userSettings.set("settings.hideCrowns", enabled);
+    document.dispatchEvent(new CustomEvent("country-ui-settings-changed"));
+
+    console.log("👑 Hide Crowns:", enabled ? "ON" : "OFF");
+  }
+
   private toggleLeftClickOpensMenu(e: CustomEvent<{ checked: boolean }>) {
     const enabled = e.detail?.checked;
     if (typeof enabled !== "boolean") return;
@@ -193,10 +214,14 @@ export class UserSettingModal extends LitElement {
     const availableLanguages = translationManager.getAvailableLanguages();
     this.languageList = availableLanguages.map(code => {
       const langData = translationManager.getLanguageData(code);
+      const langInfo = langData?.lang || {};
       return {
         code: code,
-        name: langData?.lang_name || code,
-        nativeName: langData?.lang_native || langData?.lang_name || code
+        name: langInfo.lang_name || langInfo.en || code,
+        nativeName: langInfo.lang_native || langInfo.native || langInfo.lang_name || code,
+        en: langInfo.en || code,
+        native: langInfo.native || langInfo.lang_native || code,
+        svg: langInfo.svg || 'xx'
       };
     });
   }
@@ -211,8 +236,13 @@ export class UserSettingModal extends LitElement {
     return "English";
   }
 
-  private openLanguageModal() {
+  private async openLanguageModal() {
+    // Ensure language data is loaded before opening
+    if (this.languageList.length === 0) {
+      await this.initializeLanguageData();
+    }
     this.showLanguageModal = true;
+    this.requestUpdate();
   }
 
   private async handleLanguageSelected(e: CustomEvent) {
@@ -225,9 +255,72 @@ export class UserSettingModal extends LitElement {
     // This is the simplest way to ensure all components get the new translations
     window.location.reload();
   }
+  
+  private renderUIToggle(icon: string, label: string, enabled: boolean, onClick: () => void) {
+    return html`
+      <button
+        class="ui-toggle-btn ${enabled ? 'enabled' : 'disabled'}"
+        @click=${() => {
+          onClick();
+          this.requestUpdate();
+          document.dispatchEvent(new CustomEvent("country-ui-settings-changed"));
+        }}
+        title="${label}"
+      >
+        <span class="icon">${icon}</span>
+        <span class="label">${label}</span>
+      </button>
+    `;
+  }
 
   render() {
     return html`
+      <style>
+        .country-ui-container {
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 8px;
+          padding: 12px;
+          margin-top: 8px;
+        }
+        .country-ui-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 8px;
+          margin-top: 12px;
+        }
+        .ui-toggle-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 4px;
+          padding: 8px;
+          border-radius: 4px;
+          font-size: 12px;
+          cursor: pointer;
+          transition: all 0.2s;
+          border: 1px solid transparent;
+        }
+        .ui-toggle-btn.enabled {
+          background-color: rgba(34, 197, 94, 0.2);
+          border-color: rgba(34, 197, 94, 0.4);
+          color: #86efac;
+        }
+        .ui-toggle-btn.disabled {
+          background-color: rgba(239, 68, 68, 0.2);
+          border-color: rgba(239, 68, 68, 0.4);
+          color: #fca5a5;
+        }
+        .ui-toggle-btn:hover {
+          transform: scale(1.05);
+        }
+        .ui-toggle-btn .icon {
+          font-size: 16px;
+        }
+        .ui-toggle-btn .label {
+          font-size: 11px;
+        }
+      </style>
       <o-modal title="${translateText("user_setting.title")}">
         <div class="modal-overlay">
           <div class="modal-content user-setting-modal">
@@ -351,6 +444,88 @@ export class UserSettingModal extends LitElement {
         .checked=${this.userSettings.anonymousNames()}
         @change=${this.toggleAnonymousNames}
       ></setting-toggle>
+
+      <!-- 🗺️ Country UI Settings -->
+      <div class="setting-item vertical country-ui-container">
+        <div class="toggle-row">
+          <label class="setting-label" style="cursor: pointer;" @click=${() => this.countryUIExpanded = !this.countryUIExpanded}>
+            ${translateText("user_setting.country_ui_label")}
+            <span style="margin-left: 8px; font-size: 12px;">${this.countryUIExpanded ? "▼" : "▶"}</span>
+          </label>
+        </div>
+        <div class="setting-description">${translateText("user_setting.country_ui_desc")}</div>
+        
+        <div class="country-ui-options" style="display: ${this.countryUIExpanded ? 'block' : 'none'};">
+          <div class="country-ui-grid">
+            ${this.renderUIToggle("🏳️", "Names", this.userSettings.showNationNames(), () => this.userSettings.toggleShowNationNames())}
+            ${this.renderUIToggle("👑", "Crowns", this.userSettings.showCrowns(), () => this.userSettings.toggleShowCrowns())}
+            ${this.renderUIToggle("⚔️", "Troops", this.userSettings.showTroops(), () => this.userSettings.toggleShowTroops())}
+            ${this.renderUIToggle("🏴", "Flags", this.userSettings.showFlags(), () => this.userSettings.toggleShowFlags())}
+            ${this.renderUIToggle("🤝", "Alliances", this.userSettings.showAlliances(), () => this.userSettings.toggleShowAlliances())}
+            ${this.renderUIToggle("✉️", "Requests", this.userSettings.showAllianceRequests(), () => this.userSettings.toggleShowAllianceRequests())}
+            ${this.renderUIToggle("🎯", "Targets", this.userSettings.showTargets(), () => this.userSettings.toggleShowTargets())}
+            ${this.renderUIToggle("🛡️", "Traitors", this.userSettings.showTraitors(), () => this.userSettings.toggleShowTraitors())}
+            ${this.renderUIToggle("📵", "Offline", this.userSettings.showDisconnected(), () => this.userSettings.toggleShowDisconnected())}
+            ${this.renderUIToggle("🚫", "Embargo", this.userSettings.showEmbargoes(), () => this.userSettings.toggleShowEmbargoes())}
+            ${this.renderUIToggle("☢️", "Nukes", this.userSettings.showNukes(), () => this.userSettings.toggleShowNukes())}
+          </div>
+          
+          <div style="display: flex; gap: 8px; justify-content: center; margin-top: 12px;">
+            <button
+              class="country-ui-button"
+              @click=${() => {
+                this.userSettings.toggleAllCountryUI(true);
+                this.requestUpdate();
+                document.dispatchEvent(new CustomEvent("country-ui-settings-changed"));
+              }}
+              style="
+                background: rgba(34, 197, 94, 0.2);
+                border: 1px solid rgba(34, 197, 94, 0.4);
+                border-radius: 4px;
+                padding: 4px 12px;
+                color: #86efac;
+                cursor: pointer;
+                font-size: 12px;
+                transition: all 0.2s;
+              "
+              @mouseenter=${(e: MouseEvent) => {
+                (e.target as HTMLElement).style.background = "rgba(34, 197, 94, 0.3)";
+              }}
+              @mouseleave=${(e: MouseEvent) => {
+                (e.target as HTMLElement).style.background = "rgba(34, 197, 94, 0.2)";
+              }}
+            >
+              ${translateText("user_setting.show_all_ui")}
+            </button>
+            <button
+              class="country-ui-button"
+              @click=${() => {
+                this.userSettings.toggleAllCountryUI(false);
+                this.requestUpdate();
+                document.dispatchEvent(new CustomEvent("country-ui-settings-changed"));
+              }}
+              style="
+                background: rgba(239, 68, 68, 0.2);
+                border: 1px solid rgba(239, 68, 68, 0.4);
+                border-radius: 4px;
+                padding: 4px 12px;
+                color: #fca5a5;
+                cursor: pointer;
+                font-size: 12px;
+                transition: all 0.2s;
+              "
+              @mouseenter=${(e: MouseEvent) => {
+                (e.target as HTMLElement).style.background = "rgba(239, 68, 68, 0.3)";
+              }}
+              @mouseleave=${(e: MouseEvent) => {
+                (e.target as HTMLElement).style.background = "rgba(239, 68, 68, 0.2)";
+              }}
+            >
+              ${translateText("user_setting.hide_all_ui")}
+            </button>
+          </div>
+        </div>
+      </div>
 
       <!-- ⚔️ Attack Ratio -->
       <setting-slider

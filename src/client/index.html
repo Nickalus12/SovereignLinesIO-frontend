@@ -161,8 +161,50 @@
       /* Strategic points scattered across the map */
       .strategic-points {
         position: absolute;
-        width: 100%;
-        height: 100%;
+        width: 200%;
+        height: 120%;
+        top: -10%;
+        left: 0;
+        animation: infiniteScroll 120s linear infinite;
+        will-change: transform;
+        transform: translateZ(0);
+      }
+      
+      
+      /* War activity indicators */
+      @keyframes warFlash {
+        0%, 100% { opacity: 0; transform: scale(0.3); }
+        5% { opacity: 0.6; transform: scale(0.8); }
+        10% { opacity: 0.4; transform: scale(1); }
+        20% { opacity: 0; transform: scale(0.6); }
+      }
+      
+      .war-flash {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(255, 100, 100, 0.8) 0%, rgba(255, 0, 0, 0.4) 50%, transparent 70%);
+        animation: warFlash 8s ease-in-out infinite;
+        pointer-events: none;
+      }
+      
+      .war-flash:nth-child(odd) { animation-delay: 4s; }
+      
+      /* Signal ripples */
+      @keyframes signalRipple {
+        0% { transform: scale(0.5); opacity: 0.3; }
+        100% { transform: scale(2); opacity: 0; }
+      }
+      
+      .signal-ripple {
+        position: absolute;
+        width: 30px;
+        height: 30px;
+        border: 1px solid rgba(74, 95, 58, 0.5);
+        border-radius: 50%;
+        animation: signalRipple 6s ease-out infinite;
+        pointer-events: none;
       }
       
       /* Reduce strategic points on mobile for performance */
@@ -180,25 +222,28 @@
       
       @keyframes pulse {
         0%, 100% { 
-          opacity: 0.6; 
-          transform: scale(1); 
-          box-shadow: 0 0 10px currentColor;
+          opacity: 0.4; 
+          transform: scale(0.8); 
+          box-shadow: 0 0 8px currentColor;
         }
         50% { 
-          opacity: 1; 
-          transform: scale(1.2); 
-          box-shadow: 0 0 20px currentColor, 0 0 30px currentColor;
+          opacity: 0.7; 
+          transform: scale(1.1); 
+          box-shadow: 0 0 15px currentColor, 0 0 25px currentColor;
         }
       }
       
       .strategic-point {
         position: absolute;
-        width: 8px;
-        height: 8px;
+        width: 6px;
+        height: 6px;
         border-radius: 50%;
-        animation: pulse 3s ease-in-out infinite;
+        animation: pulse 4s ease-in-out infinite;
         will-change: transform, opacity;
         transform: translateZ(0);
+        z-index: 10;
+        filter: brightness(1.2);
+        background: radial-gradient(circle, currentColor 0%, currentColor 40%, transparent 70%);
       }
       
       /* Disable strategic point animations on mobile */
@@ -209,17 +254,41 @@
         }
       }
       
-      /* Random strategic points positions */
-      .strategic-point:nth-child(1) { top: 20%; left: 15%; color: #ff4444; animation-delay: 0s; }
-      .strategic-point:nth-child(2) { top: 35%; left: 30%; color: #44ff44; animation-delay: 0.5s; }
-      .strategic-point:nth-child(3) { top: 50%; left: 45%; color: #4444ff; animation-delay: 1s; }
-      .strategic-point:nth-child(4) { top: 25%; left: 60%; color: #ffff44; animation-delay: 1.5s; }
-      .strategic-point:nth-child(5) { top: 70%; left: 25%; color: #ff44ff; animation-delay: 2s; }
-      .strategic-point:nth-child(6) { top: 60%; left: 70%; color: #44ffff; animation-delay: 2.5s; }
-      .strategic-point:nth-child(7) { top: 40%; left: 80%; color: #ff4444; animation-delay: 0.3s; }
-      .strategic-point:nth-child(8) { top: 80%; left: 50%; color: #44ff44; animation-delay: 0.8s; }
-      .strategic-point:nth-child(9) { top: 15%; left: 85%; color: #4444ff; animation-delay: 1.3s; }
-      .strategic-point:nth-child(10) { top: 85%; left: 15%; color: #ffff44; animation-delay: 1.8s; }
+      /* Strategic points on major cities/regions - positioned to match world map */
+      /* North America */
+      .strategic-point.new-york { top: 40%; left: 18%; color: #ff4444; }
+      .strategic-point.los-angeles { top: 38%; left: 12%; color: #4444ff; }
+      .strategic-point.mexico-city { top: 52%; left: 14%; color: #44ff44; }
+      
+      /* South America */
+      .strategic-point.sao-paulo { top: 72%; left: 24%; color: #ffff44; }
+      .strategic-point.buenos-aires { top: 78%; left: 22%; color: #ff44ff; }
+      
+      /* Europe */
+      .strategic-point.london { top: 35%; left: 48%; color: #ff4444; }
+      .strategic-point.paris { top: 38%; left: 49%; color: #4444ff; }
+      .strategic-point.berlin { top: 35%; left: 51%; color: #44ff44; }
+      .strategic-point.moscow { top: 32%; left: 56%; color: #ffff44; }
+      
+      /* Africa */
+      .strategic-point.cairo { top: 48%; left: 53%; color: #ff44ff; }
+      .strategic-point.lagos { top: 58%; left: 49%; color: #44ffff; }
+      .strategic-point.johannesburg { top: 75%; left: 52%; color: #ff4444; }
+      
+      /* Asia */
+      .strategic-point.dubai { top: 45%; left: 58%; color: #4444ff; }
+      .strategic-point.mumbai { top: 52%; left: 63%; color: #44ff44; }
+      .strategic-point.beijing { top: 40%; left: 75%; color: #ffff44; }
+      .strategic-point.tokyo { top: 38%; left: 82%; color: #ff44ff; }
+      .strategic-point.singapore { top: 60%; left: 72%; color: #44ffff; }
+      
+      /* Australia */
+      .strategic-point.sydney { top: 78%; left: 85%; color: #ff4444; }
+      
+      /* Animation delays for variety */
+      .strategic-point:nth-child(odd) { animation-delay: 0s; }
+      .strategic-point:nth-child(even) { animation-delay: 1.5s; }
+      .strategic-point:nth-child(3n) { animation-delay: 3s; }
       
       /* Depth layers */
       .depth-layer-1 {
@@ -301,60 +370,6 @@
           rgba(0, 0, 0, 0.9) 100%);
       }
 
-      .left-gutter-ad {
-        position: fixed;
-        left: 0;
-        top: 200px;
-        /* Changed from top: 50% */
-        transform: none;
-        /* Removed translateY(-50%) since we don't need to center anymore */
-        z-index: 40;
-        width: 300px;
-        height: 600px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        pointer-events: auto;
-      }
-
-      .left-gutter-ad google-ad {
-        width: 100%;
-        height: 100%;
-        display: block;
-      }
-
-      .right-gutter-ad {
-        position: fixed;
-        right: 0;
-        top: 200px;
-        /* Changed from top: 50% */
-        transform: none;
-        /* Removed translateY(-50%) since we don't need to center anymore */
-        z-index: 40;
-        width: 300px;
-        height: 600px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        pointer-events: auto;
-      }
-
-      .right-gutter-ad google-ad {
-        width: 100%;
-        height: 100%;
-        display: block;
-      }
-
-      /* Media query to hide the gutter ad on smaller screens */
-      @media (max-width: 1280px) {
-        .left-gutter-ad {
-          display: none;
-        }
-
-        .right-gutter-ad {
-          display: none;
-        }
-      }
 
       /* display:none if child has class parent-hidden since we can't use shadow DOM in Lit due to Tailwind */
       .component-hideable:has(> .parent-hidden) {
@@ -402,10 +417,65 @@
     class="h-full select-none font-sans min-h-screen bg-opacity-0 bg-cover bg-center bg-fixed transition-opacity duration-300 ease-in-out flex flex-col"
   >
     <header class="l-header">
-      <div class="l-header__content">
+      <div class="l-header__content" style="position: relative;">
+        <!-- Profile section for logged-in users -->
+        <div class="l-header__profile" style="position: absolute; top: 20px; right: 20px; z-index: 100; display: none;">
+          <!-- Profile dropdown will be moved here when user is logged in -->
+        </div>
+        
         <!-- SOVEREIGN Pixelated Military Logo -->
         <div class="l-header__logo" style="max-width: 100%; padding: 0 1rem; position: relative; margin: 0 auto;">
+          <!-- Background Person Image -->
+          <div class="main-menu-person" style="
+            position: absolute;
+            bottom: -20%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 600px;
+            height: 150%;
+            background-image: url('/images/MainMenuPerson.png');
+            background-size: contain;
+            background-position: bottom center;
+            background-repeat: no-repeat;
+            opacity: 0.008;
+            pointer-events: none;
+            z-index: 0;
+            animation: personFloat 6s ease-in-out infinite;
+          "></div>
+          
           <style>
+            @keyframes personFloat {
+              0%, 100% { 
+                transform: translateX(-50%) translateY(0) scale(1);
+              }
+              50% { 
+                transform: translateX(-50%) translateY(-5px) scale(1.02);
+              }
+            }
+            
+            /* Responsive adjustments */
+            @media (max-width: 768px) {
+              .main-menu-person {
+                height: 120%;
+                bottom: -10%;
+                opacity: 0.006 !important;
+              }
+            }
+            
+            @media (max-width: 480px) {
+              .main-menu-person {
+                height: 100%;
+                bottom: 0;
+                opacity: 0.004 !important;
+              }
+            }
+            
+            /* Ensure title is above the background */
+            .l-header__logo > div {
+              position: relative;
+              z-index: 1;
+            }
             @keyframes glitch {
               0%, 100% { text-shadow: 2px 2px 0 #2d3b25, -2px -2px 0 #1a1f15; }
               25% { text-shadow: -2px 2px 0 #2d3b25, 2px -2px 0 #1a1f15; }
@@ -465,13 +535,17 @@
             }
           </style>
           
-          <div style="text-align: center;">
+          <div style="text-align: center; position: relative; z-index: 1;">
             <!-- Main text -->
             <div class="pixelated-text">SOVEREIGN LINES</div>
           </div>
         </div>
-        <div id="game-version" class="l-header__highlightText" style="color: #4a5f3a; font-weight: bold; font-size: 1.1em; text-transform: uppercase; letter-spacing: 2px; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);">
+        <div id="game-version" class="l-header__highlightText" style="color: #4a5f3a; font-weight: bold; font-size: 0.8em; text-transform: uppercase; letter-spacing: 2px; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);">
           Loading version...
+        </div>
+        <!-- Profile Section moved to header for logged-in users only -->
+        <div class="l-header__profile" style="position: absolute; top: 20px; right: 20px; z-index: 100; display: none;">
+          <!-- This will be shown only when user is logged in -->
         </div>
       </div>
     </header>
@@ -501,19 +575,6 @@
       <div class="depth-layer-1"></div>
       <div class="depth-layer-2"></div>
       
-      <!-- Strategic points scattered across the map -->
-      <div class="strategic-points">
-        <div class="strategic-point"></div>
-        <div class="strategic-point"></div>
-        <div class="strategic-point"></div>
-        <div class="strategic-point"></div>
-        <div class="strategic-point"></div>
-        <div class="strategic-point"></div>
-        <div class="strategic-point"></div>
-        <div class="strategic-point"></div>
-        <div class="strategic-point"></div>
-        <div class="strategic-point"></div>
-      </div>
       
       <!-- Gradient overlay for depth -->
       <div class="world-map-overlay"></div>
@@ -521,6 +582,7 @@
       <!-- Scanning line effect -->
       <div class="scan-line"></div>
     </div>
+    
 
     <!-- Main container with responsive padding -->
     <main class="flex justify-center flex-grow" style="position: relative; z-index: 1;">
@@ -530,6 +592,7 @@
           title="Initializing..."
           disable="true"
           block
+          style="display: none;"
         ></o-button>
 
         <o-button
@@ -538,13 +601,23 @@
           translationKey="main.log_out"
           visible="false"
           block
+          style="display: none;"
         ></o-button>
+
+        <!-- Profile/Auth Section for non-logged in users -->
+        <div class="auth-section-main">
+          <profile-dropdown></profile-dropdown>
+        </div>
 
         <div class="container__row">
           <flag-input class="w-[20%] md:w-[15%]"></flag-input>
           <username-input class="relative w-full"></username-input>
+          <div id="subscription-button-container-inline" class="w-[20%] md:w-[15%] flex items-center justify-center">
+            <!-- Subscription button will be added here by JavaScript -->
+          </div>
           <news-button
             class="w-[20%] md:w-[15%] component-hideable"
+            style="display: none;"
           ></news-button>
         </div>
         <div></div>
@@ -593,32 +666,785 @@
       </div>
     </main>
 
+    
     <!-- User Setting -->
     <button
       id="settings-button"
       title="Settings"
-      class="fixed bottom-4 right-4 z-50 rounded-full p-2 shadow-lg transition-colors duration-300 flex items-center justify-center"
-      style="width: 60px; height: 60px; background-color: #0075ff"
+      class="fixed bottom-4 right-4 z-50 rounded-full p-2 shadow-lg transition-all duration-300 flex items-center justify-center settings-glass-button"
+      style="width: 60px; height: 60px;"
     >
       <img
-        src="../../resources/images/SettingIconWhite.svg"
+        src="../../resources/images/settingsicon.svg"
         alt="Settings"
         style="width: 48px; height: 48px"
       />
     </button>
     
     <style>
-      /* Make settings button smaller on mobile */
+      /* TACTICAL COMMAND VIP BUTTON - Completely Redesigned */
+      .subscription-button {
+        /* Military command terminal aesthetic */
+        background: 
+          linear-gradient(135deg, #0a1f0a 0%, #1a2f1a 20%, #0f1f0f 100%),
+          repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(0, 255, 100, 0.03) 2px, rgba(0, 255, 100, 0.03) 4px);
+        border: 1px solid #00ff64;
+        border-radius: 4px;
+        padding: 0.8rem 1.4rem;
+        color: #00ff64;
+        font-weight: 800;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 
+          0 0 10px rgba(0, 255, 100, 0.2),
+          0 4px 8px rgba(0, 0, 0, 0.6),
+          inset 0 1px 0 rgba(0, 255, 100, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        position: relative;
+        overflow: hidden;
+        width: 100%;
+        justify-content: center;
+        font-family: 'Courier New', monospace;
+      }
+      
+      /* COMMAND CONSOLE ANIMATIONS */
+      .subscription-button::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(0, 255, 100, 0.4), transparent);
+        animation: scanLine 3s infinite ease-in-out;
+      }
+      
+      .subscription-button::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 2px;
+        height: 100%;
+        background: linear-gradient(to bottom, transparent, #00ff64, transparent);
+        animation: verticalPulse 2s infinite ease-in-out;
+      }
+      
+      /* Enhanced effects for free tier */
+      .subscription-button.tier-free {
+        background: 
+          linear-gradient(135deg, #0a1f0a 0%, #1a2f1a 20%, #0f1f0f 100%),
+          repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(0, 255, 100, 0.05) 2px, rgba(0, 255, 100, 0.05) 4px);
+        border-color: #00ff64;
+        animation: commandPulse 3s infinite ease-in-out;
+      }
+      
+      .subscription-button.tier-free .subscription-text {
+        animation: textFlicker 4s infinite ease-in-out;
+      }
+      
+      @keyframes scanLine {
+        0% { left: -100%; opacity: 0; }
+        50% { opacity: 1; }
+        100% { left: 100%; opacity: 0; }
+      }
+      
+      @keyframes verticalPulse {
+        0%, 100% { opacity: 0.3; transform: scaleY(0.8); }
+        50% { opacity: 1; transform: scaleY(1.2); }
+      }
+      
+      @keyframes commandPulse {
+        0%, 100% { 
+          box-shadow: 
+            0 0 10px rgba(0, 255, 100, 0.2),
+            0 4px 8px rgba(0, 0, 0, 0.6),
+            inset 0 1px 0 rgba(0, 255, 100, 0.1);
+        }
+        50% { 
+          box-shadow: 
+            0 0 20px rgba(0, 255, 100, 0.4),
+            0 0 30px rgba(0, 255, 100, 0.2),
+            0 4px 8px rgba(0, 0, 0, 0.6),
+            inset 0 1px 0 rgba(0, 255, 100, 0.2);
+        }
+      }
+      
+      @keyframes textFlicker {
+        0%, 90%, 100% { opacity: 1; }
+        93%, 97% { opacity: 0.8; }
+        95% { opacity: 0.6; }
+      }
+      
+      /* TACTICAL HOVER EFFECTS */
+      .subscription-button:hover {
+        transform: translateY(-1px);
+        background: 
+          linear-gradient(135deg, #0f2a0f 0%, #1f3f1f 20%, #142814 100%),
+          repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(0, 255, 100, 0.08) 2px, rgba(0, 255, 100, 0.08) 4px);
+        border-color: #00ff88;
+        color: #00ff88;
+        box-shadow: 
+          0 0 15px rgba(0, 255, 100, 0.4),
+          0 0 25px rgba(0, 255, 100, 0.2),
+          0 6px 12px rgba(0, 0, 0, 0.8),
+          inset 0 1px 0 rgba(0, 255, 100, 0.3);
+      }
+      
+      .subscription-button:hover::before {
+        animation: scanLine 1.5s infinite ease-in-out;
+      }
+      
+      .subscription-button:hover::after {
+        background: linear-gradient(to bottom, #00ff88, #00ff64, #00ff88);
+        width: 3px;
+        animation: verticalPulse 1s infinite ease-in-out;
+      }
+      
+      /* ACTIVE PRESS EFFECT */
+      .subscription-button:active {
+        transform: translateY(0);
+        background: 
+          linear-gradient(135deg, #051505 0%, #0a1a0a 100%);
+        box-shadow: 
+          0 0 8px rgba(0, 255, 100, 0.3),
+          inset 0 2px 4px rgba(0, 0, 0, 0.5);
+      }
+      
+      /* ATTENTION GRABBING STATES */
+      .subscription-button.attention-grabbing {
+        animation: tacticalAlert 2s infinite ease-in-out;
+      }
+      
+      @keyframes tacticalAlert {
+        0%, 100% {
+          border-color: #00ff64;
+          box-shadow: 
+            0 0 10px rgba(0, 255, 100, 0.2),
+            0 4px 8px rgba(0, 0, 0, 0.6);
+        }
+        50% {
+          border-color: #00ff88;
+          box-shadow: 
+            0 0 25px rgba(0, 255, 100, 0.5),
+            0 0 35px rgba(0, 255, 100, 0.3),
+            0 4px 8px rgba(0, 0, 0, 0.6);
+        }
+      }
+          background-position: 0% 50%;
+        }
+        100% {
+          background-position: 100% 50%;
+        }
+      }
+      
+      /* Content styling */
+      .subscription-button-content {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        position: relative;
+        z-index: 2;
+      }
+      
+      /* Icon wrapper removed since no icons */
+      .subscription-icon-wrapper {
+        display: none;
+      }
+      
+      .subscription-text {
+        font-size: 12px;
+        font-weight: 800;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+        letter-spacing: 1.5px;
+      }
+      
+      /* Attention-grabbing animations for free tier */
+      .subscription-button.attention-grabbing {
+        animation: subtleBounce 4s ease-in-out infinite;
+      }
+      
+      @keyframes subtleBounce {
+        0%, 100% { transform: translateY(0) scale(1); }
+        50% { transform: translateY(-2px) scale(1.02); }
+      }
+      
+      /* Constant glow effect */
+      .subscription-button.constant-glow .subscription-button-glow {
+        opacity: 0.3;
+        animation: constantPulse 3s ease-in-out infinite;
+      }
+      
+      @keyframes constantPulse {
+        0%, 100% { opacity: 0.3; transform: translate(-50%, -50%) scale(1); }
+        50% { opacity: 0.5; transform: translate(-50%, -50%) scale(1.1); }
+      }
+      
+      /* Pulse glow animation */
+      .subscription-button.pulse-glow {
+        animation: intensePulse 1s ease-out;
+        box-shadow: 
+          0 4px 8px rgba(0, 0, 0, 0.3),
+          0 0 30px rgba(143, 188, 143, 0.4),
+          inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      }
+      
+      @keyframes intensePulse {
+        0% { 
+          transform: scale(1);
+          box-shadow: 
+            0 4px 8px rgba(0, 0, 0, 0.3),
+            0 0 30px rgba(143, 188, 143, 0.4);
+        }
+        50% { 
+          transform: scale(1.05);
+          box-shadow: 
+            0 6px 16px rgba(0, 0, 0, 0.4),
+            0 0 50px rgba(143, 188, 143, 0.6);
+        }
+        100% { 
+          transform: scale(1);
+          box-shadow: 
+            0 4px 8px rgba(0, 0, 0, 0.3),
+            0 0 30px rgba(143, 188, 143, 0.4);
+        }
+      }
+      
+      /* Border flash animation */
+      .subscription-button.border-flash .subscription-button-border {
+        opacity: 1;
+        animation: borderFlash 1s ease-out;
+      }
+      
+      @keyframes borderFlash {
+        0% { 
+          opacity: 0;
+          background: linear-gradient(45deg, #ffff00, #ff6600, #ffff00);
+        }
+        50% { 
+          opacity: 1;
+          background: linear-gradient(45deg, #ff6600, #ffff00, #ff6600);
+        }
+        100% { 
+          opacity: 0;
+          background: linear-gradient(45deg, #ffff00, #ff6600, #ffff00);
+        }
+      }
+      
+      /* Multiple sparkle effects */
+      .subscription-sparkle {
+        position: absolute;
+        top: 10%;
+        right: 10%;
+        width: 6px;
+        height: 6px;
+        background: #ffff00;
+        border-radius: 50%;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+      
+      .subscription-sparkle::before,
+      .subscription-sparkle::after {
+        content: '';
+        position: absolute;
+        width: 4px;
+        height: 4px;
+        background: #ffffff;
+        border-radius: 50%;
+      }
+      
+      .subscription-sparkle::before {
+        top: -10px;
+        left: 10px;
+      }
+      
+      .subscription-sparkle::after {
+        bottom: -10px;
+        right: 10px;
+      }
+      
+      .subscription-button.sparkle-active .subscription-sparkle,
+      .subscription-button.sparkle-active .subscription-sparkle::before,
+      .subscription-button.sparkle-active .subscription-sparkle::after {
+        animation: multiSparkle 2s ease-out;
+      }
+      
+      @keyframes multiSparkle {
+        0% {
+          opacity: 0;
+          transform: scale(0) rotate(0deg);
+        }
+        20% {
+          opacity: 1;
+          transform: scale(1.5) rotate(72deg);
+        }
+        40% {
+          opacity: 1;
+          transform: scale(1) rotate(144deg);
+          box-shadow: 0 0 15px #ffff00, 0 0 30px #ffff00;
+        }
+        60% {
+          opacity: 1;
+          transform: scale(1.2) rotate(216deg);
+        }
+        80% {
+          opacity: 0.5;
+          transform: scale(0.8) rotate(288deg);
+        }
+        100% {
+          opacity: 0;
+          transform: scale(0) rotate(360deg);
+        }
+      }
+      
+      /* Tier-specific styles */
+      .subscription-button.tier-premium {
+        background: linear-gradient(135deg, #3d2f1f 0%, #1f1611 100%);
+        border-color: #b8860b;
+        color: #ffd700;
+      }
+      
+      .subscription-button.tier-premium .subscription-button-border {
+        background: linear-gradient(45deg, #b8860b, #ffd700, #b8860b);
+      }
+      
+      .subscription-button.tier-premium:hover {
+        background: linear-gradient(135deg, #4a3926 0%, #2b1f14 100%);
+        border-color: #ffd700;
+        color: #fff8dc;
+        box-shadow: 
+          0 6px 16px rgba(184, 134, 11, 0.3),
+          0 0 20px rgba(255, 215, 0, 0.2);
+      }
+      
+      .subscription-button.tier-elite {
+        background: linear-gradient(135deg, #1a1f3a 0%, #0f1428 100%);
+        border-color: #4169e1;
+        color: #87ceeb;
+      }
+      
+      .subscription-button.tier-elite .subscription-button-border {
+        background: linear-gradient(45deg, #4169e1, #87ceeb, #4169e1);
+      }
+      
+      .subscription-button.tier-elite:hover {
+        background: linear-gradient(135deg, #252b4a 0%, #1a1f3a 100%);
+        border-color: #87ceeb;
+        color: #add8e6;
+        box-shadow: 
+          0 6px 16px rgba(65, 105, 225, 0.3),
+          0 0 20px rgba(135, 206, 235, 0.2);
+      }
+      
+      .subscription-button.tier-sovereign {
+        background: linear-gradient(135deg, #2d1b4e 0%, #1a0f2e 100%);
+        border-color: #9333ea;
+        color: #e9d5ff;
+        box-shadow: 
+          0 4px 8px rgba(0, 0, 0, 0.3),
+          0 0 20px rgba(147, 51, 234, 0.2),
+          inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      }
+      
+      .subscription-button.tier-sovereign .subscription-button-border {
+        background: linear-gradient(45deg, #9333ea, #e9d5ff, #9333ea);
+        opacity: 0.8;
+        animation: borderGlow 2s linear infinite;
+      }
+      
+      .subscription-button.tier-sovereign:hover {
+        background: linear-gradient(135deg, #3d2464 0%, #2d1b4e 100%);
+        border-color: #e9d5ff;
+        color: #f3e8ff;
+        box-shadow: 
+          0 6px 16px rgba(147, 51, 234, 0.4),
+          0 0 30px rgba(233, 213, 255, 0.3),
+          inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      }
+      
+      /* Premium icon spin animation */
+      .premium-spin .subscription-icon {
+        animation: iconSpin 8s linear infinite;
+      }
+      
+      @keyframes iconSpin {
+        0% {
+          transform: rotateY(0deg);
+        }
+        100% {
+          transform: rotateY(360deg);
+        }
+      }
+      
+      /* TACTICAL DATA STREAMS - New Particle System */
+      .sovereign-particles {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        overflow: hidden;
+        z-index: 1;
+      }
+      
+      /* Data stream particles */
+      .particle.stream {
+        position: absolute;
+        width: 1px;
+        height: 100%;
+        background: linear-gradient(to bottom, 
+          transparent 0%, 
+          rgba(0, 255, 100, 0.8) 20%, 
+          rgba(0, 255, 100, 1) 50%, 
+          rgba(0, 255, 100, 0.8) 80%, 
+          transparent 100%);
+        animation: dataStream 2s infinite linear;
+        opacity: 0.6;
+      }
+      
+      /* Binary code particles */
+      .particle.binary::before {
+        content: '1010';
+        position: absolute;
+        color: rgba(0, 255, 100, 0.7);
+        font-family: 'Courier New', monospace;
+        font-size: 8px;
+        font-weight: bold;
+        animation: binaryCode 3s infinite ease-in-out;
+      }
+      
+      /* Signal pulse particles */
+      .particle.pulse {
+        position: absolute;
+        width: 2px;
+        height: 2px;
+        background: #00ff64;
+        border-radius: 50%;
+        box-shadow: 0 0 4px #00ff64;
+        animation: signalPulse 2.5s infinite ease-in-out;
+      }
+      
+      /* Positioning */
+      .particle:nth-child(1) { left: 20%; animation-delay: 0s; }
+      .particle:nth-child(2) { left: 40%; animation-delay: 0.8s; }
+      .particle:nth-child(3) { left: 60%; animation-delay: 1.6s; }
+      .particle:nth-child(4) { left: 80%; animation-delay: 2.4s; }
+      
+      @keyframes dataStream {
+        0% { transform: translateY(-20px); opacity: 0; }
+        10% { opacity: 0.6; }
+        90% { opacity: 0.6; }
+        100% { transform: translateY(120%); opacity: 0; }
+      }
+      
+      @keyframes binaryCode {
+        0% { 
+          transform: translateY(100%) translateX(-50%); 
+          opacity: 0; 
+        }
+        25% { opacity: 0.7; }
+        75% { opacity: 0.7; }
+        100% { 
+          transform: translateY(-20px) translateX(-50%); 
+          opacity: 0; 
+        }
+      }
+      
+      @keyframes signalPulse {
+        0% { 
+          transform: translateY(100%) scale(0); 
+          opacity: 0; 
+        }
+        25% { 
+          transform: translateY(75%) scale(1); 
+          opacity: 1; 
+        }
+        75% { 
+          transform: translateY(25%) scale(1.2); 
+          opacity: 1; 
+        }
+        100% { 
+          transform: translateY(-10%) scale(0); 
+          opacity: 0; 
+        }
+      }
+
+      /* Dark mode adjustments */
+      .dark .subscription-button {
+        background: linear-gradient(135deg, #0f1a0f 0%, #0a0f0a 100%);
+        border-color: #1f3a1f;
+        color: #7fa87f;
+      }
+      
+      .dark .subscription-button:hover {
+        background: linear-gradient(135deg, #142814 0%, #0f1a0f 100%);
+        border-color: #2d4a2d;
+        color: #8fbc8f;
+      }
+      
+      /* Military Frosted Glass Settings Button */
+      .settings-glass-button {
+        background: 
+          linear-gradient(135deg, rgba(74, 95, 58, 0.15) 0%, rgba(45, 59, 37, 0.2) 50%, rgba(26, 47, 26, 0.15) 100%),
+          linear-gradient(45deg, rgba(143, 188, 143, 0.05) 0%, transparent 100%);
+        backdrop-filter: blur(16px) saturate(180%);
+        -webkit-backdrop-filter: blur(16px) saturate(180%);
+        border: 2px solid rgba(143, 188, 143, 0.3);
+        box-shadow: 
+          0 8px 32px rgba(0, 0, 0, 0.4),
+          0 4px 16px rgba(74, 95, 58, 0.2),
+          inset 0 1px 0 rgba(255, 255, 255, 0.1),
+          inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+        position: fixed !important;
+        bottom: 1rem !important;
+        right: 1rem !important;
+        left: auto !important;
+        overflow: hidden;
+      }
+
+      .settings-glass-button::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(143, 188, 143, 0.3), transparent);
+        transition: left 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      .settings-glass-button:hover {
+        background: 
+          linear-gradient(135deg, rgba(90, 127, 58, 0.2) 0%, rgba(58, 79, 42, 0.3) 50%, rgba(45, 59, 37, 0.2) 100%),
+          linear-gradient(45deg, rgba(143, 188, 143, 0.1) 0%, transparent 100%);
+        border-color: rgba(143, 188, 143, 0.5);
+        transform: translateY(-2px) scale(1.05);
+        box-shadow: 
+          0 12px 40px rgba(0, 0, 0, 0.5),
+          0 6px 24px rgba(74, 95, 58, 0.3),
+          0 0 30px rgba(143, 188, 143, 0.2),
+          inset 0 1px 0 rgba(255, 255, 255, 0.15),
+          inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+      }
+
+      .settings-glass-button:hover::before {
+        left: 100%;
+      }
+
+      .settings-glass-button:active {
+        transform: translateY(0) scale(1.02);
+        box-shadow: 
+          0 4px 16px rgba(0, 0, 0, 0.4),
+          0 2px 8px rgba(74, 95, 58, 0.2),
+          inset 0 2px 4px rgba(0, 0, 0, 0.3);
+      }
+
+      /* Military settings icon glow */
+      .settings-glass-button img {
+        filter: drop-shadow(0 0 8px rgba(143, 188, 143, 0.4));
+        transition: filter 0.3s ease;
+      }
+
+      .settings-glass-button:hover img {
+        filter: drop-shadow(0 0 12px rgba(143, 188, 143, 0.6)) brightness(1.1);
+      }
+
+      /* Military Frosted Glass Input Fields */
+      .military-glass-input {
+        background: 
+          linear-gradient(135deg, rgba(74, 95, 58, 0.12) 0%, rgba(45, 59, 37, 0.15) 50%, rgba(26, 47, 26, 0.12) 100%),
+          linear-gradient(45deg, rgba(143, 188, 143, 0.05) 0%, transparent 100%);
+        backdrop-filter: blur(12px) saturate(160%);
+        -webkit-backdrop-filter: blur(12px) saturate(160%);
+        border: 2px solid rgba(143, 188, 143, 0.25);
+        border-radius: 12px;
+        color: #e8f0e0;
+        font-weight: 600;
+        font-family: 'Courier New', monospace;
+        letter-spacing: 1px;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+        box-shadow: 
+          0 4px 16px rgba(0, 0, 0, 0.3),
+          0 2px 8px rgba(74, 95, 58, 0.15),
+          inset 0 1px 0 rgba(255, 255, 255, 0.08),
+          inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .military-glass-input::placeholder {
+        color: rgba(212, 224, 196, 0.6);
+        font-style: italic;
+        letter-spacing: 0.5px;
+      }
+
+      .military-glass-input:focus {
+        background: 
+          linear-gradient(135deg, rgba(90, 127, 58, 0.15) 0%, rgba(58, 79, 42, 0.18) 50%, rgba(45, 59, 37, 0.15) 100%),
+          linear-gradient(45deg, rgba(143, 188, 143, 0.08) 0%, transparent 100%);
+        border-color: rgba(143, 188, 143, 0.5);
+        color: #f0f8f0;
+        box-shadow: 
+          0 6px 24px rgba(0, 0, 0, 0.4),
+          0 3px 12px rgba(74, 95, 58, 0.25),
+          0 0 20px rgba(143, 188, 143, 0.15),
+          inset 0 1px 0 rgba(255, 255, 255, 0.12),
+          inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+        transform: translateY(-1px);
+      }
+
+      /* Military Frosted Glass Flag Button */
+      .military-glass-flag {
+        background: 
+          linear-gradient(135deg, rgba(74, 95, 58, 0.15) 0%, rgba(45, 59, 37, 0.2) 50%, rgba(26, 47, 26, 0.15) 100%),
+          linear-gradient(45deg, rgba(143, 188, 143, 0.05) 0%, transparent 100%);
+        backdrop-filter: blur(12px) saturate(160%);
+        -webkit-backdrop-filter: blur(12px) saturate(160%);
+        border: 2px solid rgba(143, 188, 143, 0.3);
+        box-shadow: 
+          0 4px 16px rgba(0, 0, 0, 0.3),
+          0 2px 8px rgba(74, 95, 58, 0.15),
+          inset 0 1px 0 rgba(255, 255, 255, 0.08),
+          inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .military-glass-flag::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(143, 188, 143, 0.2), transparent);
+        transition: left 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      .military-glass-flag:hover {
+        background: 
+          linear-gradient(135deg, rgba(90, 127, 58, 0.2) 0%, rgba(58, 79, 42, 0.25) 50%, rgba(45, 59, 37, 0.2) 100%),
+          linear-gradient(45deg, rgba(143, 188, 143, 0.08) 0%, transparent 100%);
+        border-color: rgba(143, 188, 143, 0.45);
+        transform: translateY(-1px) scale(1.02);
+        box-shadow: 
+          0 6px 20px rgba(0, 0, 0, 0.4),
+          0 3px 12px rgba(74, 95, 58, 0.25),
+          0 0 15px rgba(143, 188, 143, 0.2),
+          inset 0 1px 0 rgba(255, 255, 255, 0.12),
+          inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+      }
+
+      .military-glass-flag:hover::before {
+        left: 100%;
+      }
+
+      /* Flag Selection Modal */
+      .military-glass-modal {
+        background: 
+          linear-gradient(135deg, rgba(0, 0, 0, 0.85) 0%, rgba(20, 25, 20, 0.9) 50%, rgba(10, 15, 10, 0.85) 100%),
+          linear-gradient(45deg, rgba(74, 95, 58, 0.1) 0%, transparent 100%);
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        border: 2px solid rgba(143, 188, 143, 0.3);
+        box-shadow: 
+          0 16px 48px rgba(0, 0, 0, 0.6),
+          0 8px 24px rgba(74, 95, 58, 0.2),
+          inset 0 1px 0 rgba(255, 255, 255, 0.1),
+          inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+      }
+
+      /* Search Input in Flag Modal */
+      .military-glass-search {
+        background: 
+          linear-gradient(135deg, rgba(74, 95, 58, 0.15) 0%, rgba(45, 59, 37, 0.2) 50%, rgba(26, 47, 26, 0.15) 100%);
+        backdrop-filter: blur(8px) saturate(140%);
+        -webkit-backdrop-filter: blur(8px) saturate(140%);
+        border: 2px solid rgba(143, 188, 143, 0.25);
+        border-radius: 8px;
+        color: #e8f0e0;
+        font-weight: 600;
+        font-family: 'Courier New', monospace;
+        letter-spacing: 0.5px;
+        box-shadow: 
+          0 2px 8px rgba(0, 0, 0, 0.4),
+          inset 0 1px 0 rgba(255, 255, 255, 0.08);
+        transition: all 0.3s ease;
+      }
+
+      .military-glass-search::placeholder {
+        color: rgba(212, 224, 196, 0.6);
+        font-style: italic;
+      }
+
+      .military-glass-search:focus {
+        border-color: rgba(143, 188, 143, 0.5);
+        color: #f0f8f0;
+        box-shadow: 
+          0 4px 12px rgba(0, 0, 0, 0.5),
+          0 0 15px rgba(143, 188, 143, 0.15),
+          inset 0 1px 0 rgba(255, 255, 255, 0.12);
+      }
+
+      /* Error Message Styling */
+      .military-glass-error {
+        background: 
+          linear-gradient(135deg, rgba(255, 69, 58, 0.15) 0%, rgba(255, 45, 32, 0.2) 100%),
+          linear-gradient(45deg, rgba(255, 255, 255, 0.05) 0%, transparent 100%);
+        backdrop-filter: blur(12px) saturate(180%);
+        -webkit-backdrop-filter: blur(12px) saturate(180%);
+        border: 2px solid rgba(255, 69, 58, 0.4);
+        border-radius: 8px;
+        color: #ff8a80;
+        font-weight: 600;
+        font-family: 'Courier New', monospace;
+        letter-spacing: 0.5px;
+        box-shadow: 
+          0 4px 16px rgba(0, 0, 0, 0.4),
+          0 2px 8px rgba(255, 69, 58, 0.2),
+          inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      }
+
+      /* Mobile responsive styles */
       @media (max-width: 640px) {
-        #settings-button {
+        .settings-glass-button {
           width: 50px !important;
           height: 50px !important;
           bottom: 1rem !important;
           right: 1rem !important;
         }
-        #settings-button img {
+        .settings-glass-button img {
           width: 36px !important;
           height: 36px !important;
+        }
+        
+        .subscription-button {
+          padding: 6px 10px;
+          font-size: 10px;
+          gap: 4px;
+          clip-path: polygon(20% 0%, 80% 0%, 100% 50%, 80% 100%, 20% 100%, 0% 50%);
+        }
+        
+        .subscription-icon {
+          font-size: 14px;
+        }
+        
+        .subscription-text {
+          font-size: 10px;
+        }
+        
+        .subscription-button-border,
+        .subscription-button-glow {
+          display: none;
         }
       }
     </style>
@@ -681,16 +1507,23 @@
           </a>
           <a
             target="_blank"
-            href="https://discord.gg/rb9m657yhX"
-            class="t-link"
+            href="https://discord.gg/cRxDUuXPvt"
+            class="t-link t-link--discord"
           >
+            <img
+              src="../../resources/icons/discord.svg"
+              alt="Discord"
+              width="20"
+              height="20"
+              class="discord-icon"
+            />
             <span data-i18n="main.join_discord"> Join the Discord! </span>
           </a>
         </div>
         <div class="l-footer__col t-text-white">
           <a
             href="https://github.com/"
-            class="t-link inline-flex items-center space-x-2"
+            class="t-link"
             target="_blank"
           >
             ©2025 Sovereign Lines™
@@ -699,7 +1532,7 @@
               alt="GitHub"
               width="20"
               height="20"
-              class="ml-2 mr-4"
+              style="margin-left: 8px;"
             />
           </a>
           <a href="/privacy-policy.html" class="t-link" target="_blank">
@@ -708,16 +1541,6 @@
           <a href="/terms-of-service.html" class="t-link" target="_blank">
             Terms of Service
           </a>
-          <p style="text-align: center">
-            <a
-              href="https://www.playwire.com/contact-direct-sales"
-              data-i18n="main.advertise"
-              class="t-link"
-              target="_blank"
-              rel="noopener"
-              >Advertise</a
-            >
-          </p>
         </div>
       </div>
     </footer>
@@ -725,6 +1548,13 @@
     <single-player-modal></single-player-modal>
     <host-lobby-modal></host-lobby-modal>
     <join-private-lobby-modal></join-private-lobby-modal>
+    
+    <!-- Authentication modals -->
+    <login-modal></login-modal>
+    <register-modal></register-modal>
+    <account-settings-modal></account-settings-modal>
+    <password-reset-modal></password-reset-modal>
+    <terms-acceptance-modal></terms-acceptance-modal>
     <emoji-table></emoji-table>
     <leader-board></leader-board>
     <build-menu></build-menu>
@@ -739,7 +1569,7 @@
     <multi-tab-modal></multi-tab-modal>
     <unit-info-modal></unit-info-modal>
     <news-modal></news-modal>
-    <left-in-game-ad></left-in-game-ad>
+    <!-- Authentication Modals (duplicates removed) -->
     <div
       id="language-modal"
       class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex justify-center items-center"
@@ -769,6 +1599,9 @@
       
     </script>
 
+    <!-- Player Profile Modal -->
+    <player-profile-modal></player-profile-modal>
+    
     <!-- Analytics -->
     <script
       defer

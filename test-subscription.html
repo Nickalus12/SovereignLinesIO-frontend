@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subscription System Test</title>
+    <link rel="stylesheet" href="src/client/styles.css">
+    <style>
+        body {
+            background: #1a1a2e;
+            color: white;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .button-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Sovereign Lines Subscription System Test</h1>
+        
+        <div class="button-container" id="subscription-button-container"></div>
+        
+        <h2>Test Subscription Modal</h2>
+        <button onclick="showModal()">Open Subscription Modal</button>
+        
+        <div id="modal-container"></div>
+    </div>
+
+    <script type="module">
+        // Simple test implementation
+        window.showModal = function() {
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay active';
+            modal.innerHTML = `
+                <div class="modal-container active" style="max-width: 1200px;">
+                    <button class="modal-close" onclick="this.parentElement.parentElement.remove()">×</button>
+                    <div class="modal-content">
+                        <div class="subscription-modal-content">
+                            <div class="subscription-header">
+                                <h2>Choose Your Sovereign Rank</h2>
+                                <p class="subtitle">Support the kingdom and unlock exclusive features!</p>
+                            </div>
+
+                            <div class="billing-toggle">
+                                <button class="billing-option monthly active">Monthly</button>
+                                <button class="billing-option yearly">Yearly (Save 17%)</button>
+                            </div>
+
+                            <div class="subscription-tiers">
+                                <div class="tier-card premium">
+                                    <div class="tier-header">
+                                        <h3 class="tier-name">Premium</h3>
+                                        <div class="tier-price">
+                                            <span class="currency">$</span>
+                                            <span class="amount">2.00</span>
+                                            <span class="period">/month</span>
+                                        </div>
+                                    </div>
+                                    <div class="tier-badge">⭐</div>
+                                    <ul class="tier-benefits">
+                                        <li>✓ 9 vibrant name colors</li>
+                                        <li>✓ 3 border styles</li>
+                                        <li>✓ 25% XP boost</li>
+                                        <li>✓ Replay access</li>
+                                        <li>✓ ⭐ Chat badge</li>
+                                    </ul>
+                                    <button class="tier-select-btn">Select Plan</button>
+                                </div>
+
+                                <div class="tier-card elite">
+                                    <span class="popular-badge">MOST POPULAR</span>
+                                    <div class="tier-header">
+                                        <h3 class="tier-name">Elite</h3>
+                                        <div class="tier-price">
+                                            <span class="currency">$</span>
+                                            <span class="amount">5.00</span>
+                                            <span class="period">/month</span>
+                                        </div>
+                                    </div>
+                                    <div class="tier-badge">💎</div>
+                                    <ul class="tier-benefits">
+                                        <li>✓ 20 premium name colors</li>
+                                        <li>✓ 6 border styles</li>
+                                        <li>✓ Priority matchmaking</li>
+                                        <li>✓ 50% XP boost</li>
+                                        <li>✓ Access to Elite maps</li>
+                                        <li>✓ 💎 Chat badge</li>
+                                    </ul>
+                                    <button class="tier-select-btn">Select Plan</button>
+                                </div>
+
+                                <div class="tier-card sovereign">
+                                    <div class="tier-header">
+                                        <h3 class="tier-name">Sovereign</h3>
+                                        <div class="tier-price">
+                                            <span class="currency">$</span>
+                                            <span class="amount">10.00</span>
+                                            <span class="period">/month</span>
+                                        </div>
+                                    </div>
+                                    <div class="tier-badge">👑</div>
+                                    <ul class="tier-benefits">
+                                        <li>✓ Animated gradient names</li>
+                                        <li>✓ Exclusive animated borders</li>
+                                        <li>✓ Unlimited emojis</li>
+                                        <li>✓ 100% XP boost</li>
+                                        <li>✓ Monthly exclusive cosmetic</li>
+                                        <li>✓ Beta access to new features</li>
+                                        <li>✓ 👑 Chat badge</li>
+                                    </ul>
+                                    <button class="tier-select-btn">Select Plan</button>
+                                </div>
+                            </div>
+
+                            <div class="subscription-footer">
+                                <p class="payment-info">
+                                    🔒 Secure payment via Stripe<br>
+                                    Cancel anytime • Instant activation
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        };
+
+        // Create subscription button
+        const button = document.createElement('button');
+        button.className = 'subscription-button';
+        button.innerHTML = `
+            <div class="subscription-button-content">
+                <span class="subscription-icon">👑</span>
+                <span class="subscription-text">Upgrade</span>
+            </div>
+        `;
+        button.onclick = showModal;
+        document.getElementById('subscription-button-container').appendChild(button);
+    </script>
+</body>
+</html>

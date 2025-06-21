@@ -1,0 +1,16 @@
+Initial commit - Sovereign Lines Backend (Proprietary)
+
+This is the proprietary game server for Sovereign Lines.
+
+CONFIDENTIAL - This code is proprietary and contains trade secrets.
+Unauthorized copying, modification, or distribution is strictly prohibited.
+
+Features:
+- High-performance WebSocket game server
+- Real-time multiplayer synchronization
+- Anti-cheat and security systems
+- Scalable architecture with clustering support
+- Advanced bot AI with strategic behavior
+- OpenTelemetry monitoring integration
+
+© 2025 Sovereign Lines Team. All rights reserved.

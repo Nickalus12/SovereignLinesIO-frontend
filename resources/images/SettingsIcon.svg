@@ -1,0 +1,33 @@
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <!-- Military-style angular gear -->
+  <g id="settings-icon">
+    <!-- Gear teeth with angular military style -->
+    <path d="M27 4 L37 4 L38 12 Q41 13 43 15 L51 11 L57 21 L52 28 Q52.5 31 52.5 33 Q52.5 35 52 38 L57 43 L51 53 L43 49 Q41 51 38 52 L37 60 L27 60 L26 52 Q23 51 21 49 L13 53 L7 43 L12 36 Q11.5 33 11.5 31 Q11.5 29 12 26 L7 21 L13 11 L21 15 Q23 13 26 12 L27 4 Z" 
+          fill="#6BB257" 
+          stroke="#4A8A3C" 
+          stroke-width="1.5"
+          stroke-linejoin="bevel"/>
+    
+    <!-- Center hole -->
+    <circle cx="32" cy="32" r="12" fill="#1E222A"/>
+    
+    <!-- Inner tactical ring -->
+    <circle cx="32" cy="32" r="10" 
+            fill="none" 
+            stroke="#6BB257" 
+            stroke-width="2"
+            stroke-dasharray="4 2"/>
+    
+    <!-- Center military bolt pattern -->
+    <g transform="translate(32, 32)">
+      <!-- Hex nut shape in center -->
+      <path d="M-5,-2.887 L0,-5.774 L5,-2.887 L5,2.887 L0,5.774 L-5,2.887 Z" 
+            fill="#4A8A3C" 
+            stroke="#6BB257" 
+            stroke-width="0.5"/>
+      
+      <!-- Center dot -->
+      <circle cx="0" cy="0" r="1.5" fill="#6BB257"/>
+    </g>
+  </g>
+</svg>

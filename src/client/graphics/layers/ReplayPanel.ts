@@ -26,16 +26,13 @@ export class ReplayPanel extends LitElement implements Layer {
   init() {
     this._isSinglePlayer =
       this.game?.config().gameConfig().gameType === GameType.Singleplayer;
-    if (this._isSinglePlayer) {
-      this.setVisible(true);
-    }
+    // Disable old replay panel - using unified control panel instead
+    this.setVisible(false);
   }
 
   tick() {
-    if (!this._isVisible && this.game?.config().isReplay()) {
-      this.setVisible(true);
-    }
-
+    // Always keep disabled - using unified control panel instead
+    this.setVisible(false);
     this.requestUpdate();
   }
 

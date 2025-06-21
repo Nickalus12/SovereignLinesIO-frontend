@@ -13,6 +13,7 @@ const unitOptions: UnitType[] = [
   UnitType.DefensePost,
   UnitType.Port,
   UnitType.Warship,
+  UnitType.SupplyTruck,
   UnitType.MissileSilo,
   UnitType.SAMLauncher,
   UnitType.AtomBomb,
@@ -33,23 +34,21 @@ export function renderUnitTypeOptions({
 }: UnitTypeRenderContext): TemplateResult[] {
   return unitOptions.map(
     (unitType) => html`
-      <label
-        class="option-card ${disabledUnits.includes(unitType) ? "" : "selected"}"
-        style="width: 140px;"
+      <div
+        class="unit-type-toggle ${disabledUnits.includes(unitType) ? "disabled" : ""}"
       >
-        <div class="checkbox-icon"></div>
-        <input
-          type="checkbox"
-          .checked=${disabledUnits.includes(unitType)}
-          @change=${(e: Event) => {
-            const checked = (e.target as HTMLInputElement).checked;
-            toggleUnit(unitType, checked);
-          }}
-        />
-        <div class="option-card-title" style="text-align: center;">
-          ${translateText(getUnitTranslationKey(unitType))}
-        </div>
-      </label>
+        <label>
+          <input
+            type="checkbox"
+            .checked=${disabledUnits.includes(unitType)}
+            @change=${(e: Event) => {
+              const checked = (e.target as HTMLInputElement).checked;
+              toggleUnit(unitType, checked);
+            }}
+          />
+          <span>${translateText(getUnitTranslationKey(unitType))}</span>
+        </label>
+      </div>
     `,
   );
 }

@@ -5,7 +5,7 @@ import { Layer } from "./Layer";
 
 export class SpawnTimer implements Layer {
   private ratios = [0];
-  private colors = ["rgba(0, 128, 255, 0.7)", "rgba(0, 0, 0, 0.5)"];
+  private colors = ["rgba(74, 95, 58, 0.9)", "rgba(20, 25, 20, 0.8)"];
 
   constructor(
     private game: GameView,
@@ -57,20 +57,67 @@ export class SpawnTimer implements Layer {
     if (this.ratios.length === 0) return;
     if (this.colors.length === 0) return;
 
-    const barHeight = 10;
+    const barHeight = 16; // Increased height
     const barWidth = this.transformHandler.width();
+    
+    // Add shadow for depth
+    context.shadowColor = "rgba(0, 0, 0, 0.5)";
+    context.shadowBlur = 4;
+    context.shadowOffsetY = 2;
 
-    let x = 0;
+    // Background
+    context.fillStyle = "rgba(15, 20, 15, 0.95)";
+    context.fillRect(0, 0, barWidth, barHeight);
+    
+    // Border
+    context.strokeStyle = "rgba(74, 95, 58, 0.5)";
+    context.lineWidth = 1;
+    context.strokeRect(0, 0, barWidth, barHeight);
+    
+    // Reset shadow for progress bar
+    context.shadowBlur = 0;
+    context.shadowOffsetY = 0;
+
+    let x = 2; // Small padding
     let filledRatio = 0;
     for (let i = 0; i < this.ratios.length && i < this.colors.length; i++) {
       const ratio = this.ratios[i] ?? 1 - filledRatio;
-      const segmentWidth = barWidth * ratio;
+      const segmentWidth = (barWidth - 4) * ratio; // Account for padding
 
-      context.fillStyle = this.colors[i];
-      context.fillRect(x, 0, segmentWidth, barHeight);
+      // Gradient fill for progress
+      if (i === 0 && this.game.inSpawnPhase()) {
+        const gradient = context.createLinearGradient(x, 0, x + segmentWidth, 0);
+        gradient.addColorStop(0, "rgba(74, 95, 58, 0.6)");
+        gradient.addColorStop(0.5, "rgba(74, 95, 58, 0.9)");
+        gradient.addColorStop(1, "rgba(90, 115, 70, 0.9)");
+        context.fillStyle = gradient;
+      } else {
+        context.fillStyle = this.colors[i];
+      }
+      
+      context.fillRect(x, 2, segmentWidth, barHeight - 4);
 
       x += segmentWidth;
       filledRatio += ratio;
+    }
+    
+    // Subtle highlight on top
+    context.fillStyle = "rgba(255, 255, 255, 0.1)";
+    context.fillRect(0, 0, barWidth, 2);
+    
+    // Add percentage text if in spawn phase
+    if (this.game.inSpawnPhase() && this.ratios[0] > 0) {
+      const percentage = Math.floor(this.ratios[0] * 100);
+      context.font = "bold 12px monospace";
+      context.fillStyle = "rgba(255, 255, 255, 0.9)";
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      context.shadowColor = "rgba(0, 0, 0, 0.8)";
+      context.shadowBlur = 3;
+      context.fillText(`${percentage}%`, barWidth / 2, barHeight / 2);
+      
+      // Reset shadow
+      context.shadowBlur = 0;
     }
   }
 }

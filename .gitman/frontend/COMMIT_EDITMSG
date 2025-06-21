@@ -1,0 +1,12 @@
+Initial commit - Sovereign Lines Frontend
+
+This is the open-source frontend client for Sovereign Lines, a real-time strategy game.
+Licensed under GPL-3.0 for community contribution and transparency.
+
+Features:
+- Browser-based game client
+- Real-time multiplayer support
+- Modern TypeScript/Webpack architecture
+- Responsive design for desktop and mobile
+
+Note: The backend server code is proprietary and maintained separately.
