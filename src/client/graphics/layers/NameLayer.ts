@@ -198,7 +198,31 @@ export class NameLayer implements Layer {
       const flagImg = document.createElement("img");
       flagImg.classList.add("player-flag");
       flagImg.style.opacity = "0.8";
-      flagImg.src = "/flags/" + player.flag() + ".svg";
+      
+      // Handle custom flags
+      if (player.flag().startsWith('custom:') || player.flag().startsWith('ai_')) {
+        const flagId = player.flag().replace('custom:', '');
+        const storedSvg = localStorage.getItem(`flag_svg_${flagId}`);
+        if (storedSvg) {
+          try {
+            const encodedSvg = btoa(unescape(encodeURIComponent(storedSvg)));
+            flagImg.src = `data:image/svg+xml;base64,${encodedSvg}`;
+          } catch (e) {
+            console.error('Failed to encode custom flag:', e);
+            flagImg.src = "/flags/xx.svg";
+          }
+        } else {
+          // Try to fetch from server
+          flagImg.src = `/api/flags/${flagId}`;
+          flagImg.onerror = () => {
+            flagImg.src = "/flags/xx.svg";
+          };
+        }
+      } else {
+        // Standard flag
+        flagImg.src = "/flags/" + player.flag() + ".svg";
+      }
+      
       flagImg.style.aspectRatio = "3/4";
       flagImg.style.display = this.userSettings.hideFlags() ? "none" : "inline-block";
       nameDiv.appendChild(flagImg);

@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="150" height="100" viewBox="0 0 150 100">
+  <defs>
+    <linearGradient id="skyForest" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#001a33;stop-opacity:1" />
+      <stop offset="70%" style="stop-color:#003366;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#004d00;stop-opacity:1" />
+    </linearGradient>
+    <radialGradient id="moonGlow">
+      <stop offset="0%" style="stop-color:#ffffcc;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#ffff99;stop-opacity:0.5" />
+      <stop offset="100%" style="stop-color:#ffff66;stop-opacity:0" />
+    </radialGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="150" height="100" fill="url(#skyForest)"/>
+  
+  <!-- Moon with glow -->
+  <circle cx="110" cy="25" r="20" fill="url(#moonGlow)" opacity="0.5"/>
+  <circle cx="110" cy="25" r="12" fill="#ffffcc"/>
+  <circle cx="107" cy="22" r="2" fill="#cccccc" opacity="0.5"/>
+  <circle cx="113" cy="28" r="3" fill="#cccccc" opacity="0.5"/>
+  
+  <!-- Background trees -->
+  <polygon points="20,100 30,60 40,100" fill="#002200" opacity="0.5"/>
+  <polygon points="110,100 120,65 130,100" fill="#002200" opacity="0.5"/>
+  <polygon points="60,100 70,55 80,100" fill="#002200" opacity="0.5"/>
+  
+  <!-- Main tree -->
+  <rect x="72" y="70" width="6" height="30" fill="#4d2600"/>
+  <polygon points="50,70 75,30 100,70" fill="#004d00"/>
+  <polygon points="55,55 75,35 95,55" fill="#006600"/>
+  <polygon points="60,45 75,25 90,45" fill="#008800"/>
+  
+  <!-- Fireflies -->
+  <circle cx="30" cy="60" r="1" fill="#ffff00" opacity="0.8">
+    <animate attributeName="opacity" values="0.2;1;0.2" dur="4s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="120" cy="50" r="1" fill="#ffff00" opacity="0.8">
+    <animate attributeName="opacity" values="0.2;1;0.2" dur="4s" begin="1s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="90" cy="80" r="1" fill="#ffff00" opacity="0.8">
+    <animate attributeName="opacity" values="0.2;1;0.2" dur="4s" begin="2s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Mist -->
+  <ellipse cx="75" cy="95" rx="60" ry="10" fill="white" opacity="0.1"/>
+  
+
+</svg>

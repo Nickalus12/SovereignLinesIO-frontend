@@ -3,26 +3,27 @@
   backdrop-filter: blur(var(--blur-md));
   display: flex;
   justify-content: center;
-  padding: 24px 24px 12px;
+  padding: 6px 8px 4px;
   position: relative;
   z-index: 10;
+  flex-shrink: 0;
+  margin-bottom: 0.25rem;
 
   @media (min-width: 800px) {
-    padding: 24px 24px;
+    padding: 8px 10px 6px;
   }
   
   @media (max-width: 640px) {
-    padding: 16px 16px 8px;
+    padding: 6px 8px 4px;
   }
 }
 
 .l-header__content {
   display: flex;
-  flex: 1;
-  max-width: 600px;
+  max-width: 360px;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
   width: 100%;
 }
 
@@ -34,7 +35,7 @@
 }
 
 .l-header__logo {
-  max-width: 450px;
+  max-width: 300px;
   width: 100%;
   display: flex;
   justify-content: center;

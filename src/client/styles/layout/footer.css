@@ -7,11 +7,12 @@
   -webkit-backdrop-filter: blur(10px) saturate(120%);
   display: flex;
   justify-content: center;
-  padding: 20px 24px;
+  padding: 6px 10px;
   border-top: 2px solid rgba(74, 95, 58, 0.3);
   position: relative;
   overflow: hidden;
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+  flex-shrink: 0;
 }
 
 /* Tactical scan line effect */
@@ -36,13 +37,13 @@
 }
 
 .l-footer__content {
-  max-width: 1200px;
+  max-width: 360px;
   width: 100%;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;
-  gap: 40px;
+  gap: 12px;
 }
 
 .l-footer__col {
@@ -66,16 +67,16 @@
   color: #a8b89c;
   text-decoration: none;
   font-weight: 600;
-  font-size: 13px;
+  font-size: 11px;
   font-family: 'Courier New', monospace;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.8px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  padding: 6px 12px;
+  padding: 4px 8px;
   border-radius: 4px;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 /* Tactical hover effect */
@@ -104,15 +105,15 @@
 /* Discord link with icon */
 .t-link--discord {
   color: #b8c8ff;
-  padding: 8px 14px;
+  padding: 4px 8px;
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
 }
 
 .discord-icon {
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
   opacity: 0.9;
   transition: all 0.3s ease;
   filter: brightness(1.2);
@@ -132,7 +133,7 @@
 /* Copyright section */
 .l-footer__col.t-text-white {
   color: #8a9680;
-  font-size: 12px;
+  font-size: 10px;
   font-family: 'Courier New', monospace;
   letter-spacing: 0.5px;
 }
@@ -141,13 +142,13 @@
 .l-footer__col .t-link[href*="github"] {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   background: linear-gradient(135deg, rgba(74, 95, 58, 0.15) 0%, rgba(74, 95, 58, 0.05) 100%);
   border: 1px solid rgba(74, 95, 58, 0.4);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   font-weight: 700;
   color: #d4e0c4;
-  padding: 8px 16px;
+  padding: 4px 10px;
   margin: 0;
 }
 
@@ -173,9 +174,9 @@
 /* Privacy and Terms links */
 .l-footer__col .t-link[href*="privacy"],
 .l-footer__col .t-link[href*="terms"] {
-  font-size: 12px;
+  font-size: 10px;
   color: #8a9680;
-  padding: 4px 8px;
+  padding: 3px 6px;
 }
 
 /* Mobile responsive design */

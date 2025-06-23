@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="150" height="100" viewBox="0 0 150 100">
+  <defs>
+    <radialGradient id="cyberGrad">
+      <stop offset="0%" style="stop-color:#00ff00;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#003300;stop-opacity:1" />
+    </radialGradient>
+    <pattern id="circuit" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+      <rect width="20" height="20" fill="#001100"/>
+      <circle cx="10" cy="10" r="2" fill="#00ff00" opacity="0.5"/>
+      <path d="M10,0 L10,20 M0,10 L20,10" stroke="#00ff00" stroke-width="0.5" opacity="0.3"/>
+    </pattern>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="150" height="100" fill="#000000"/>
+  <rect width="150" height="100" fill="url(#circuit)" opacity="0.5"/>
+  
+  <!-- Dragon silhouette -->
+  <path d="M30,50 Q50,30 75,35 Q100,40 120,50 Q110,60 100,55 Q90,50 80,55 Q70,60 60,55 Q50,50 40,55 Q35,57 30,50" 
+        fill="url(#cyberGrad)" stroke="#00ff00" stroke-width="2"/>
+  
+  <!-- Dragon eye -->
+  <circle cx="65" cy="42" r="3" fill="#ff0000">
+    <animate attributeName="opacity" values="1;0.3;1" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Binary code decoration -->
+  <text x="10" y="20" font-family="monospace" font-size="10" fill="#00ff00" opacity="0.5">01001000</text>
+  <text x="100" y="90" font-family="monospace" font-size="10" fill="#00ff00" opacity="0.5">11010110</text>
+  
+
+</svg>

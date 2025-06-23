@@ -177,6 +177,25 @@ export class ControlPanel extends LitElement implements Layer {
   render() {
     return html`
       <style>
+        .control-panel-wrapper {
+          position: fixed;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          display: flex;
+          justify-content: center;
+          padding: 0.5rem;
+          z-index: 30;
+        }
+        @media (min-width: 1024px) {
+          .control-panel-wrapper {
+            justify-content: flex-start;
+            padding: 0;
+            bottom: 10px;
+            left: 10px;
+            right: auto;
+          }
+        }
         input[type="range"] {
           -webkit-appearance: none;
           background: transparent;
@@ -215,13 +234,11 @@ export class ControlPanel extends LitElement implements Layer {
           border-color: rgb(239 68 68);
         }
       </style>
-      <div
-        class="${this._isVisible
-          ? "w-full lg:w-72 sg-panel p-2 lg:p-3 text-xs"
-          : "hidden"}"
-        style="position: fixed; bottom: 10px; left: 10px; z-index: 30;"
-        @contextmenu=${(e) => e.preventDefault()}
-      >
+      <div class="${this._isVisible ? "control-panel-wrapper" : "hidden"}">
+        <div
+          class="w-full max-w-sm lg:max-w-none lg:w-72 sg-panel p-2 lg:p-3 text-xs"
+          @contextmenu=${(e) => e.preventDefault()}
+        >
         <!-- Resource Summary (Desktop only) - More compact -->
         <div class="hidden lg:block sg-card p-2 mb-3">
           <div class="grid grid-cols-2 gap-2">
@@ -334,6 +351,7 @@ export class ControlPanel extends LitElement implements Layer {
             Attack with ${(this.attackRatio * 100).toFixed(0)}%
           </div>
         </div>
+      </div>
       </div>
     `;
   }

@@ -1230,14 +1230,75 @@ export class TermsAcceptanceModal extends LitElement {
     // Log out the user since they declined the terms
     authService.logout();
 
-    // Close the browser window/tab since user declined terms
-    // This is legal as the user explicitly chose to decline
-    try {
+    // Try multiple methods to close the window/tab
+    // Method 1: Direct window.close() - works if opened by script
+    if (window.close) {
       window.close();
-    } catch (error) {
-      // If window.close() fails (some browsers restrict it), redirect to a goodbye page
-      window.location.href = 'about:blank';
     }
+    
+    // Method 2: Self-close trick for some browsers
+    window.open('', '_self', '');
+    window.close();
+    
+    // Method 3: For browsers that still don't close, navigate away
+    setTimeout(() => {
+      // If we're still here after 100ms, the close didn't work
+      // Navigate to a blank page with a message
+      const goodbyePage = `
+        <html>
+          <head>
+            <title>Mission Terminated</title>
+            <style>
+              body {
+                background: #0a0f1a;
+                color: #8fbc8f;
+                font-family: 'Courier New', monospace;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                height: 100vh;
+                margin: 0;
+                text-align: center;
+              }
+              .message {
+                padding: 40px;
+                background: rgba(74, 95, 58, 0.1);
+                border: 2px solid rgba(143, 188, 143, 0.3);
+                border-radius: 12px;
+              }
+              h1 {
+                font-size: 24px;
+                margin-bottom: 20px;
+                text-transform: uppercase;
+                letter-spacing: 2px;
+              }
+              p {
+                color: rgba(212, 224, 196, 0.8);
+                line-height: 1.6;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="message">
+              <h1>◤ MISSION TERMINATED ◥</h1>
+              <p>Your session has been terminated.</p>
+              <p>You may close this window/tab.</p>
+              <p>Thank you for your interest in Sovereign Lines.</p>
+            </div>
+          </body>
+        </html>
+      `;
+      
+      // Write the goodbye page
+      document.open();
+      document.write(goodbyePage);
+      document.close();
+      
+      // Also update the URL to about:blank after a moment
+      setTimeout(() => {
+        window.location.href = 'about:blank';
+      }, 3000);
+    }, 100);
   }
 
   /**
@@ -1253,7 +1314,7 @@ export class TermsAcceptanceModal extends LitElement {
         // If current version is accepted, no need to show
         if (version === "1.0") {
           // For authenticated users, ensure it matches their ID
-          if (user && userId !== user.id) {
+          if (user && userId !== user.id && !userId.startsWith('guest-')) {
             // Different user logged in, clear old acceptance
             localStorage.removeItem('terms_accepted');
           } else {
@@ -1291,8 +1352,32 @@ export class TermsAcceptanceModal extends LitElement {
 // Export helper function for easy checking
 export async function checkTermsAcceptance(onAcceptCallback?: () => void): Promise<void> {
   const user = await authService.getCurrentUser();
-  if (!user) return;
+  
+  // For guests, check if they've already accepted terms locally
+  if (!user) {
+    const localAcceptance = localStorage.getItem('terms_accepted');
+    if (localAcceptance) {
+      try {
+        const { version } = JSON.parse(localAcceptance);
+        if (version === "1.0") {
+          // Guest has already accepted terms
+          if (onAcceptCallback) {
+            onAcceptCallback();
+          }
+          return;
+        }
+      } catch (error) {
+        // Invalid data, continue to show terms
+      }
+    }
+    // Guest hasn't accepted terms yet - don't show modal, let them play
+    if (onAcceptCallback) {
+      onAcceptCallback();
+    }
+    return;
+  }
 
+  // For authenticated users, check if they need to accept terms
   const shouldShow = await TermsAcceptanceModal.shouldShowTerms(user);
   if (shouldShow) {
     // Get or create modal instance

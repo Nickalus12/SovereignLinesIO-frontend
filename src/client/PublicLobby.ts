@@ -166,25 +166,25 @@ export class PublicLobby extends LitElement {
     const lobbySlots: (GameInfo | null)[] = [slot1, slot2];
 
     return html`
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 max-w-5xl mx-auto">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full">
         ${lobbySlots.map((lobby, index) => {
           if (!lobby) {
             // Empty slot - show a loading placeholder with animation
             return html`
-              <div class="relative h-32 sm:h-36 md:h-44 rounded-xl overflow-hidden"
+              <div class="relative h-20 sm:h-24 rounded-xl overflow-hidden"
                    style="background: linear-gradient(135deg, #1a1f15 0%, #0d1108 100%); 
                           border: 2px dashed #2d3b25; 
                           opacity: 0.7;">
                 <div class="flex items-center justify-center h-full text-gray-400">
                   <div class="text-center">
-                    <div class="text-lg font-semibold mb-2 flex items-center justify-center gap-2">
-                      <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <div class="text-sm font-semibold mb-1 flex items-center justify-center gap-2">
+                      <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
                       Loading New Game...
                     </div>
-                    <div class="text-sm opacity-60">A new game will appear shortly</div>
+                    <div class="text-xs opacity-60">A new game will appear shortly</div>
                   </div>
                 </div>
               </div>
@@ -210,7 +210,7 @@ export class PublicLobby extends LitElement {
             <button
               @click=${() => this.lobbyClicked(lobby)}
               ?disabled=${this.isButtonDebounced || isStartingSoon}
-              class="relative h-32 sm:h-36 md:h-44 rounded-xl overflow-hidden group
+              class="relative h-20 sm:h-24 rounded-xl overflow-hidden group
                      transition-all duration-300 ${isStartingSoon ? '' : 'hover:scale-[1.02] hover:shadow-2xl'}
                      ${this.isButtonDebounced || isStartingSoon ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
                      ${isHighlighted && !isStartingSoon ? (isTeamMode ? "ring-4 ring-blue-500 ring-opacity-75" : "ring-4 ring-red-500 ring-opacity-75") : ""}"
@@ -235,20 +235,20 @@ export class PublicLobby extends LitElement {
               </div>
               
               <!-- Content -->
-              <div class="relative h-full flex flex-col justify-between p-3 sm:p-4 text-white">
+              <div class="relative h-full flex flex-col justify-between p-2 sm:p-3 text-white">
                 <!-- Top section -->
                 <div>
                   <div class="flex items-start justify-between">
                     <div>
-                      <div class="text-xs sm:text-sm font-medium text-green-400 uppercase tracking-wider mb-1">
+                      <div class="text-[10px] sm:text-xs font-medium text-green-400 uppercase tracking-wider">
                         ${translateText("public_lobby.join")}
                       </div>
-                      <div class="text-lg sm:text-xl md:text-2xl font-bold leading-tight">
+                      <div class="text-sm sm:text-base font-bold leading-tight">
                         ${translateText(`map.${lobby.gameConfig!.gameMap.toLowerCase().replace(/\s+/g, "")}`)}
                       </div>
                     </div>
                     <!-- Game mode badge -->
-                    <div class="px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-bold"
+                    <div class="px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-bold"
                          style="${lobby.gameConfig!.gameMode === GameMode.Team
                            ? 'background: rgba(59, 130, 246, 0.3); border: 1px solid rgba(59, 130, 246, 0.6); color: #60a5fa;'
                            : 'background: rgba(239, 68, 68, 0.3); border: 1px solid rgba(239, 68, 68, 0.6); color: #f87171;'}">
@@ -264,23 +264,23 @@ export class PublicLobby extends LitElement {
                   <!-- Player count -->
                   <div class="flex items-center gap-2">
                     <div class="flex items-center gap-1">
-                      <svg class="w-4 h-4 sm:w-5 sm:h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                      <svg class="w-3 h-3 sm:w-4 sm:h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"></path>
                       </svg>
-                      <span class="text-sm sm:text-base font-bold">
+                      <span class="text-xs sm:text-sm font-bold">
                         ${lobby.numClients}/${lobby.gameConfig!.maxPlayers}
                       </span>
                     </div>
                   </div>
                   
                   <!-- Timer -->
-                  <div class="flex items-center gap-1 px-3 py-1 rounded-lg"
+                  <div class="flex items-center gap-1 px-2 py-0.5 rounded-lg"
                        style="background: ${isStartingSoon ? 'rgba(100, 100, 100, 0.2)' : 'rgba(255, 255, 0, 0.1)'}; 
                               border: 1px solid ${isStartingSoon ? 'rgba(100, 100, 100, 0.3)' : 'rgba(255, 255, 0, 0.3)'};">
-                    <svg class="w-4 h-4 sm:w-5 sm:h-5 ${isStartingSoon ? 'text-gray-500' : 'text-yellow-300'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-3 h-3 sm:w-4 sm:h-4 ${isStartingSoon ? 'text-gray-500' : 'text-yellow-300'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
-                    <span class="text-base sm:text-lg md:text-xl font-bold ${isStartingSoon ? 'text-gray-500' : 'text-yellow-300'}">
+                    <span class="text-xs sm:text-sm font-bold ${isStartingSoon ? 'text-gray-500' : 'text-yellow-300'}">
                       ${timeDisplay}
                     </span>
                   </div>

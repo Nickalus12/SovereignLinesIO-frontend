@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flag Creator Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Override any z-index issues */
+        #flag-creator-modal-body {
+            z-index: 2147483647 !important;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white">
+    <div class="p-8">
+        <h1 class="text-2xl mb-4">Flag Creator Test</h1>
+        <button id="openFlagCreator" class="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg">
+            Open Flag Creator
+        </button>
+    </div>
+
+    <!-- Import the flag creator component -->
+    <flag-creator id="flagCreator"></flag-creator>
+
+    <script type="module">
+        // Mock the auth service
+        window.SimpleAuthService = {
+            getInstance: () => ({
+                getAccountTier: () => 'free'
+            })
+        };
+
+        // Import the flag creator
+        import('./src/client/components/flag-creator/FlagCreator.js').then(() => {
+            const flagCreator = document.getElementById('flagCreator');
+            const openBtn = document.getElementById('openFlagCreator');
+            
+            openBtn.addEventListener('click', () => {
+                flagCreator.open = true;
+            });
+            
+            flagCreator.addEventListener('close', () => {
+                console.log('Flag creator closed');
+            });
+        });
+    </script>
+</body>
+</html>

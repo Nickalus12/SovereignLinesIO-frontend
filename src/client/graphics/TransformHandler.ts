@@ -275,19 +275,25 @@ export class TransformHandler {
     const mapWidth = this.game.width();
     const mapHeight = this.game.height();
     
-    // Account for bottom UI on desktop (control panel)
-    // This pushes the map up so Antarctica is visible above the control panel
-    const bottomPadding = 120; // pixels reserved for bottom UI
+    // Detect if mobile
+    const isMobile = window.innerWidth < 640;
+    
+    // Account for UI elements
+    const bottomPadding = isMobile ? 100 : 120; // Less padding on mobile
     const effectiveVpHeight = vpHeight - bottomPadding;
     
     const scHor = (vpWidth / mapWidth) * fit;
     const scVer = (effectiveVpHeight / mapHeight) * fit;
     const tScale = Math.min(scHor, scVer);
+    
+    // On mobile, ensure minimum zoom for usability
+    const minMobileScale = isMobile ? 0.5 : 0.3;
+    const finalScale = Math.max(tScale, minMobileScale);
 
-    const oHor = (mapWidth - vpWidth) / 2 / tScale;
+    const oHor = (mapWidth - vpWidth) / 2 / finalScale;
     // Shift map up by half the bottom padding to center in the available space
-    const oVer = (mapHeight - vpHeight) / 2 / tScale - (bottomPadding / 2 / tScale);
+    const oVer = (mapHeight - vpHeight) / 2 / finalScale - (bottomPadding / 2 / finalScale);
 
-    this.override(oHor, oVer, tScale);
+    this.override(oHor, oVer, finalScale);
   }
 }

@@ -1,6 +1,6 @@
 .c-modal {
   position: fixed;
-  padding: 1rem;
+  padding: 0.5rem;
   z-index: 1000;
   left: 0;
   bottom: 0;
@@ -13,6 +13,7 @@
   align-items: center;
   justify-content: center;
   animation: modalBackdropFadeIn 0.3s ease-out;
+  -webkit-overflow-scrolling: touch;
 }
 
 @keyframes modalBackdropFadeIn {
@@ -29,8 +30,9 @@
 .c-modal__wrapper {
   background: linear-gradient(135deg, rgba(20, 25, 20, 0.95) 0%, rgba(15, 20, 15, 0.98) 100%);
   border-radius: 16px;
-  min-width: 340px;
-  max-width: 860px;
+  width: 100%;
+  max-width: min(860px, calc(100vw - 2rem));
+  margin: 0 auto;
   box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4), 0 0 80px rgba(74, 95, 58, 0.1);
   border: 1px solid rgba(74, 95, 58, 0.2);
   animation: modalSlideIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -128,6 +130,49 @@
 
 .c-modal__content::-webkit-scrollbar-thumb:hover {
   background: rgba(74, 95, 58, 0.5);
+}
+
+/* Mobile-specific adjustments */
+@media (max-width: 640px) {
+  .c-modal {
+    padding: 0;
+  }
+  
+  .c-modal__wrapper {
+    max-height: 100vh;
+    max-height: 100dvh;
+    border-radius: 0;
+    width: 100%;
+    max-width: 100%;
+  }
+  
+  .c-modal__content {
+    max-height: calc(100vh - 60px);
+    max-height: calc(100dvh - 60px);
+    padding: 1rem;
+  }
+  
+  .c-modal__header {
+    padding: 1rem 2.5rem 1rem 1rem;
+    font-size: 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: linear-gradient(135deg, rgba(74, 95, 58, 0.15) 0%, rgba(74, 95, 58, 0.05) 100%);
+  }
+  
+  .c-modal__close {
+    position: fixed;
+    right: 1rem;
+    top: 1rem;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 }
 
 /*This will be removed in future*/

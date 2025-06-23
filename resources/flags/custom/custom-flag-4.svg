@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="150" height="100" viewBox="0 0 150 100">
+  <defs>
+    <linearGradient id="prism1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ff00ff;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#00ffff;stop-opacity:0.8" />
+    </linearGradient>
+    <linearGradient id="prism2" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffff00;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#00ff00;stop-opacity:0.8" />
+    </linearGradient>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a2e;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#16213e;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="150" height="100" fill="url(#bgGrad)"/>
+  
+  <!-- Crystal facets -->
+  <polygon points="75,20 50,50 75,80 100,50" fill="url(#prism1)" stroke="#ffffff" stroke-width="1" opacity="0.7"/>
+  <polygon points="75,20 50,50 60,35" fill="#ff00ff" opacity="0.5"/>
+  <polygon points="75,20 100,50 90,35" fill="#00ffff" opacity="0.5"/>
+  <polygon points="75,80 50,50 60,65" fill="#ffff00" opacity="0.5"/>
+  <polygon points="75,80 100,50 90,65" fill="#00ff00" opacity="0.5"/>
+  
+  <!-- Light beams -->
+  <path d="M20,10 L75,50 L20,90" fill="none" stroke="url(#prism2)" stroke-width="2" opacity="0.3"/>
+  <path d="M130,10 L75,50 L130,90" fill="none" stroke="url(#prism1)" stroke-width="2" opacity="0.3"/>
+  
+  <!-- Sparkles -->
+  <circle cx="30" cy="30" r="1" fill="white">
+    <animate attributeName="opacity" values="0;1;0" dur="3s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="120" cy="70" r="1" fill="white">
+    <animate attributeName="opacity" values="0;1;0" dur="3s" begin="1s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="40" cy="70" r="1" fill="white">
+    <animate attributeName="opacity" values="0;1;0" dur="3s" begin="2s" repeatCount="indefinite"/>
+  </circle>
+  
+
+</svg>

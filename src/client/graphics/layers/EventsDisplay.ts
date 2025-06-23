@@ -784,12 +784,12 @@ export class EventsDisplay extends LitElement implements Layer {
       <!-- Events Toggle (when hidden) -->
       ${this._hidden
         ? html`
-            <div class="relative w-fit lg:bottom-2.5 lg:right-2.5 z-40">
+            <div class="fixed bottom-24 sm:bottom-4 right-4 z-40">
               ${this.renderButton({
                 content: html`
                   <div class="flex items-center gap-2">
                     <span class="text-sm lg:text-base">📋</span>
-                    <span>Events</span>
+                    <span class="hidden sm:inline">Events</span>
                     <span
                       class="${this.newEvents
                         ? ""
@@ -800,14 +800,14 @@ export class EventsDisplay extends LitElement implements Layer {
                 `,
                 onClick: this.toggleHidden,
                 className:
-                  "sg-button sg-button--small cursor-pointer pointer-events-auto px-3 py-2 lg:px-4 lg:py-2.5",
+                  "sg-button sg-button--small cursor-pointer pointer-events-auto px-3 py-2 lg:px-4 lg:py-2.5 shadow-lg",
               })}
             </div>
           `
         : html`
             <!-- Main Events Display -->
             <div
-              class="relative w-full lg:bottom-2.5 lg:right-2.5 z-40 lg:w-96 sg-panel"
+              class="fixed bottom-0 sm:bottom-4 right-0 sm:right-4 z-40 w-full sm:w-96 max-h-[50vh] sm:max-h-[60vh] sg-panel"
             >
               <!-- Button Bar -->
               <div

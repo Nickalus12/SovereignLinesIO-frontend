@@ -646,8 +646,10 @@ export class PartySystem extends LitElement {
 
   private showError(message: string) {
     this.errorMessage = message;
+    window.dispatchEvent(new CustomEvent('party-error'));
     setTimeout(() => {
       this.errorMessage = "";
+      window.dispatchEvent(new CustomEvent('party-state-changed'));
     }, 3000);
   }
   

@@ -285,9 +285,14 @@ export class UserSettingModal extends LitElement {
         }
         .country-ui-grid {
           display: grid;
-          grid-template-columns: repeat(3, 1fr);
+          grid-template-columns: repeat(2, 1fr);
           gap: 8px;
           margin-top: 12px;
+        }
+        @media (min-width: 640px) {
+          .country-ui-grid {
+            grid-template-columns: repeat(3, 1fr);
+          }
         }
         .ui-toggle-btn {
           display: flex;
@@ -320,13 +325,25 @@ export class UserSettingModal extends LitElement {
         .ui-toggle-btn .label {
           font-size: 11px;
         }
+        @media (max-width: 640px) {
+          .ui-toggle-btn {
+            padding: 6px;
+            font-size: 11px;
+          }
+          .ui-toggle-btn .icon {
+            font-size: 14px;
+          }
+          .ui-toggle-btn .label {
+            font-size: 10px;
+          }
+        }
       </style>
       <o-modal title="${translateText("user_setting.title")}">
         <div class="modal-overlay">
-          <div class="modal-content user-setting-modal">
+          <div class="modal-content user-setting-modal max-w-full sm:max-w-2xl mx-auto">
             <div class="flex mb-4 w-full justify-center">
               <button
-                class="w-1/2 text-center px-3 py-1 rounded-l 
+                class="flex-1 sm:w-1/2 text-center px-3 py-2 sm:py-1 rounded-l text-sm sm:text-base
       ${this.settingsMode === "basic"
                   ? "bg-white/10 text-white"
                   : "bg-transparent text-gray-400"}"
@@ -335,7 +352,7 @@ export class UserSettingModal extends LitElement {
                 ${translateText("user_setting.tab_basic")}
               </button>
               <button
-                class="w-1/2 text-center px-3 py-1 rounded-r 
+                class="flex-1 sm:w-1/2 text-center px-3 py-2 sm:py-1 rounded-r text-sm sm:text-base
       ${this.settingsMode === "keybinds"
                   ? "bg-white/10 text-white"
                   : "bg-transparent text-gray-400"}"
@@ -345,7 +362,7 @@ export class UserSettingModal extends LitElement {
               </button>
             </div>
 
-            <div class="settings-list">
+            <div class="settings-list overflow-y-auto max-h-[60vh] sm:max-h-[70vh] px-2 sm:px-4 -webkit-overflow-scrolling-touch">
               ${this.settingsMode === "basic"
                 ? this.renderBasicSettings()
                 : this.renderKeybindSettings()}
@@ -367,23 +384,24 @@ export class UserSettingModal extends LitElement {
   private renderBasicSettings() {
     return html`
       <!-- 🌐 Language Selection -->
-      <div class="setting-item vertical">
-        <div class="toggle-row">
-          <label class="setting-label">${translateText("user_setting.language_label") || "Language"}</label>
+      <div class="setting-item vertical mb-4">
+        <div class="toggle-row flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <label class="setting-label text-sm sm:text-base">${translateText("user_setting.language_label") || "Language"}</label>
           <button
-            class="language-button"
+            class="language-button w-full sm:w-auto"
             @click=${this.openLanguageModal}
             style="
               background: rgba(255, 255, 255, 0.1);
               border: 1px solid rgba(255, 255, 255, 0.2);
               border-radius: 4px;
-              padding: 4px 12px;
+              padding: 6px 12px;
               color: white;
               cursor: pointer;
               font-size: 14px;
               transition: background 0.2s;
               display: flex;
               align-items: center;
+              justify-content: center;
               gap: 8px;
             "
             @mouseenter=${(e: MouseEvent) => {
