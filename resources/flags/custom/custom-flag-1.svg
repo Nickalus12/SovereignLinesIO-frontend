@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="150" height="100" viewBox="0 0 150 100">
+  <!-- Background gradient -->
+  <defs>
+    <linearGradient id="synthGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a0033;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#330066;stop-opacity:1" />
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="150" height="100" fill="url(#synthGrad)"/>
+  
+  <!-- Grid lines -->
+  <g stroke="#ff00ff" stroke-width="0.5" opacity="0.3">
+    <line x1="0" y1="50" x2="150" y2="50"/>
+    <line x1="0" y1="60" x2="150" y2="60"/>
+    <line x1="0" y1="70" x2="150" y2="70"/>
+    <line x1="0" y1="80" x2="150" y2="80"/>
+    <line x1="0" y1="90" x2="150" y2="90"/>
+  </g>
+  
+  <!-- Sun/Moon -->
+  <circle cx="75" cy="35" r="20" fill="#ff006e" filter="url(#glow)"/>
+  <rect x="55" y="35" width="40" height="20" fill="#1a0033"/>
+  
+  <!-- Mountains -->
+  <polygon points="0,100 40,30 80,100" fill="#00ffff" opacity="0.8"/>
+  <polygon points="70,100 110,40 150,100" fill="#ff00ff" opacity="0.7"/>
+  
+
+</svg>

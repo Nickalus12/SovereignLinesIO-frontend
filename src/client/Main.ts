@@ -8,8 +8,7 @@ import { joinLobby } from "./ClientGameRunner";
 import { translationManager } from "./TranslationManager";
 import "./DarkModeButton";
 import { DarkModeButton } from "./DarkModeButton";
-import "./FlagInput";
-import { FlagInput } from "./FlagInput";
+// FlagInput functionality is now integrated into UsernameInput
 import { GameStartingModal } from "./GameStartingModal";
 import { HelpModal } from "./HelpModal";
 import { HostLobbyModal as HostPrivateLobbyModal } from "./HostLobbyModal";
@@ -48,6 +47,7 @@ import "./auth/TermsAcceptanceModal";
 import { TermsAcceptanceModal, checkTermsAcceptance } from "./auth/TermsAcceptanceModal";
 import "./styles.css";
 import { UIManager } from "./graphics/UIManager";
+import { MobileDetection } from "./utils/MobileDetection";
 
 export interface JoinLobbyEvent {
   clientID: string;
@@ -73,11 +73,30 @@ export interface JoinLobbyEvent {
   console.log('You may need to refresh the page for changes to take effect');
 };
 
+// Emergency cleanup function for stuck modals
+(window as any).cleanupStuckModals = () => {
+  const flagCreatorModal = document.getElementById('flag-creator-modal-body');
+  if (flagCreatorModal) {
+    flagCreatorModal.remove();
+    console.log('Removed stuck flag creator modal');
+  }
+  
+  // Also ensure any flag creator components have their open property set to false
+  const flagCreators = document.querySelectorAll('flag-creator');
+  flagCreators.forEach((fc: any) => {
+    if (fc.open) {
+      fc.open = false;
+      console.log('Closed open flag creator component');
+    }
+  });
+  
+  console.log('Cleanup complete - you should be able to click again');
+};
+
 class Client {
   private gameStop: (() => void) | null = null;
 
   private usernameInput: UsernameInput | null = null;
-  private flagInput: FlagInput | null = null;
   private darkModeButton: DarkModeButton | null = null;
 
   private joinModal: JoinPrivateLobbyModal;
@@ -85,6 +104,25 @@ class Client {
   private userSettings: UserSettings = new UserSettings();
 
   constructor() {}
+
+  private getCurrentUsername(): string {
+    // First check localStorage
+    const storedUsername = localStorage.getItem('username');
+    if (storedUsername) return storedUsername;
+    
+    // Fall back to username input if it exists
+    if (this.usernameInput) {
+      return this.usernameInput.getCurrentUsername() || 'Anon000';
+    }
+    
+    // Default
+    return 'Anon000';
+  }
+
+  private isUsernameValid(): boolean {
+    const username = this.getCurrentUsername();
+    return username && username.length > 0 && username !== 'Anon000';
+  }
 
   async initialize(): Promise<void> {
     // Set up party system observer
@@ -116,10 +154,8 @@ class Client {
 
     // Language selector is now in settings modal, no need to query for it here
 
-    this.flagInput = document.querySelector("flag-input") as FlagInput;
-    if (!this.flagInput) {
-      console.warn("Flag input element not found");
-    }
+    // Flag functionality is now integrated into UsernameInput
+    // No need to query for separate flag-input element
 
     this.darkModeButton = document.querySelector(
       "dark-mode-button",
@@ -230,8 +266,8 @@ class Client {
         console.log('Login successful, updating UI');
         // Profile dropdown will automatically update via auth state change
         
-        // Check if user needs to accept terms
-        await checkTermsAcceptance();
+        // Don't check terms immediately on login - wait until user tries to perform an action
+        // This prevents the modal from appearing at inappropriate times
       });
       
       console.log('Auth event listeners set up successfully');
@@ -257,6 +293,8 @@ class Client {
     setFavicon();
     document.addEventListener("join-lobby", this.handleJoinLobby.bind(this));
     document.addEventListener("leave-lobby", this.handleLeaveLobby.bind(this));
+    
+    // Flag creator is now embedded directly in the flag selection modal
 
     const spModal = document.querySelector(
       "single-player-modal",
@@ -270,7 +308,7 @@ class Client {
         // Don't allow non-host party members to access this
         return;
       }
-      if (this.usernameInput?.isValid()) {
+      if (this.isUsernameValid()) {
         // Check if user is logged in and needs to accept terms
         const user = await authService.getCurrentUser();
         if (user) {
@@ -330,7 +368,7 @@ class Client {
         // Don't allow non-host party members to access this
         return;
       }
-      if (this.usernameInput?.isValid()) {
+      if (this.isUsernameValid()) {
         // Check if user is logged in and needs to accept terms
         const user = await authService.getCurrentUser();
         if (user) {
@@ -360,7 +398,7 @@ class Client {
         // Don't allow non-host party members to access this
         return;
       }
-      if (this.usernameInput?.isValid()) {
+      if (this.isUsernameValid()) {
         // Check if user is logged in and needs to accept terms
         const user = await authService.getCurrentUser();
         if (user) {
@@ -434,11 +472,8 @@ class Client {
       {
         gameID: lobby.gameID,
         serverConfig: config,
-        flag:
-          this.flagInput === null || this.flagInput.getCurrentFlag() === "xx"
-            ? ""
-            : this.flagInput.getCurrentFlag(),
-        playerName: this.usernameInput?.getCurrentUsername() ?? "",
+        flag: localStorage.getItem('flag') || "",
+        playerName: this.getCurrentUsername(),
         token: getPlayToken(),
         clientID: lobby.clientID,
         gameStartInfo: lobby.gameStartInfo ?? lobby.gameRecord?.info,
@@ -645,7 +680,13 @@ class Client {
 
 // Initialize the client when the DOM is loaded
 document.addEventListener("DOMContentLoaded", async () => {
-  // Initialize translation manager first
+  // Clean up any stuck modals from previous sessions
+  (window as any).cleanupStuckModals?.();
+  
+  // Initialize mobile detection first
+  MobileDetection.init();
+  
+  // Initialize translation manager
   await translationManager.initialize();
   
   // Small delay to ensure all components are ready

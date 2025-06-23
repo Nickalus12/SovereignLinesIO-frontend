@@ -196,7 +196,7 @@ export default async (env, argv) => {
             },
             {
               directory: path.join(__dirname, "resources"),
-              publicPath: "/",
+              publicPath: "/resources/",
               watch: true,
             },
           ],
@@ -274,7 +274,14 @@ export default async (env, argv) => {
               changeOrigin: true,
               logLevel: "debug",
             },
-            // Original API endpoints
+            // Flag API endpoints (handled by workers)
+            {
+              context: ["/api/flags"],
+              target: `http://${BACKEND_HOST}:3001`,
+              secure: false,
+              changeOrigin: true,
+            },
+            // Original API endpoints (handled by master)
             {
               context: [
                 "/api/env",

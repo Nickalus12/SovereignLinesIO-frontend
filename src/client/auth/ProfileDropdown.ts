@@ -7,6 +7,7 @@ import { statsTracker } from "./StatsTracker";
 import "./AchievementGrid";
 import { SubscriptionModal } from "../SubscriptionModal";
 import { checkTermsAcceptance } from "./TermsAcceptanceModal";
+import Countries from "../data/countries.json";
 
 @customElement("profile-dropdown")
 export class ProfileDropdown extends LitElement {
@@ -16,6 +17,10 @@ export class ProfileDropdown extends LitElement {
   @state() private profileData: ProfileData | null = null;
   @state() private isLoading = false;
   @state() private error: string | null = null;
+  @state() private currentFlag: string = "";
+  @state() private showFlagPicker = false;
+  @state() private flagSearch = "";
+  @state() private editingName = false;
 
   static styles = css`
     :host {
@@ -131,56 +136,175 @@ export class ProfileDropdown extends LitElement {
       animation: militaryGlow 3s ease-in-out infinite;
     }
 
-    /* Minimal Profile Button - Optimized for all screens */
+    /* VIP-style Profile Button */
     .profile-trigger {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      padding: 6px 10px;
-      background: rgba(74, 95, 58, 0.1);
-      border: 1px solid rgba(74, 95, 58, 0.3);
-      border-radius: 4px;
+      gap: 8px;
+      padding: 12px 20px;
+      background: 
+        linear-gradient(135deg, rgba(0, 0, 0, 0.2) 0%, transparent 50%, rgba(0, 0, 0, 0.2) 100%),
+        linear-gradient(135deg, #1a2f1a 0%, #0f1f0f 100%);
+      border: 2px solid #2a4f2a;
+      border-radius: 12px;
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
       font-family: 'Courier New', monospace;
-      font-size: 12px;
-      font-weight: 600;
+      font-size: 13px;
+      font-weight: 700;
       color: #8fbc8f;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: 1px;
       margin: 0;
       max-width: fit-content;
+      box-shadow: 
+        0 6px 20px rgba(0, 0, 0, 0.6),
+        0 2px 8px rgba(0, 0, 0, 0.8),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1),
+        inset 0 -2px 0 rgba(0, 0, 0, 0.4);
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+      overflow: visible;
+    }
+
+    /* Decorative corner accents */
+    .profile-trigger::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: 
+        linear-gradient(45deg, #3a5f3a 0%, transparent 20%),
+        linear-gradient(225deg, #3a5f3a 0%, transparent 20%),
+        linear-gradient(135deg, #3a5f3a 0%, transparent 20%),
+        linear-gradient(315deg, #3a5f3a 0%, transparent 20%);
+      background-size: 8px 8px;
+      background-position: 
+        top left,
+        top right,
+        bottom right,
+        bottom left;
+      background-repeat: no-repeat;
+      border-radius: 12px;
+      opacity: 0.5;
+      pointer-events: none;
     }
 
     .profile-trigger:hover {
-      background: rgba(74, 95, 58, 0.2);
-      border-color: rgba(143, 188, 143, 0.5);
+      background: 
+        linear-gradient(135deg, rgba(0, 0, 0, 0.2) 0%, transparent 50%, rgba(0, 0, 0, 0.2) 100%),
+        linear-gradient(135deg, #2a3f2a 0%, #1a2f1a 100%);
+      border-color: #3a5f3a;
       color: #ffffff;
+      transform: translateY(-1px);
+      box-shadow: 
+        0 8px 24px rgba(0, 0, 0, 0.7),
+        0 3px 10px rgba(0, 0, 0, 0.9),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15),
+        inset 0 -2px 0 rgba(0, 0, 0, 0.5);
     }
 
     .profile-trigger.active {
-      background: rgba(74, 95, 58, 0.3);
-      border-color: #8fbc8f;
-      color: #ffffff;
+      transform: translateY(0);
+      box-shadow: 
+        0 4px 16px rgba(0, 0, 0, 0.6),
+        0 2px 6px rgba(0, 0, 0, 0.8),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+    }
+
+    /* Guest Account Indicator */
+    .profile-trigger.guest {
+      border-color: rgba(255, 235, 59, 0.8);
+      background: 
+        linear-gradient(135deg, rgba(0, 0, 0, 0.2) 0%, transparent 50%, rgba(0, 0, 0, 0.2) 100%),
+        linear-gradient(135deg, #2f2a1a 0%, #1f1a0f 100%);
+    }
+
+    .guest-caution-badge {
+      position: absolute;
+      top: -12px;
+      right: -12px;
+      background: #ffd600;
+      color: #000;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: bold;
+      box-shadow: 
+        0 2px 8px rgba(0, 0, 0, 0.6),
+        0 0 0 2px rgba(0, 0, 0, 0.9);
+      z-index: 10;
+    }
+
+    .profile-trigger.guest:hover {
+      border-color: #ffd600;
+      background: 
+        linear-gradient(135deg, rgba(0, 0, 0, 0.2) 0%, transparent 50%, rgba(0, 0, 0, 0.2) 100%),
+        linear-gradient(135deg, #3f3a2a 0%, #2f2a1a 100%);
+    }
+
+    /* Authenticated Account Indicator */
+    .profile-trigger.authenticated {
+      border-color: rgba(74, 222, 128, 0.6);
+    }
+
+    .auth-check-badge {
+      position: absolute;
+      top: -12px;
+      right: -12px;
+      background: #4ade80;
+      color: #000;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: bold;
+      box-shadow: 
+        0 2px 8px rgba(0, 0, 0, 0.6),
+        0 0 0 2px rgba(0, 0, 0, 0.9);
+      z-index: 10;
+    }
+
+    .profile-trigger.authenticated:hover {
+      border-color: #4ade80;
     }
 
     .profile-avatar {
-      width: 20px;
-      height: 20px;
+      width: 24px;
+      height: 24px;
       border-radius: 50%;
       background: linear-gradient(135deg, #4a5f3a 0%, #3a4f2a 100%);
-      border: 1px solid #5a7f4a;
+      border: 2px solid #5a7f4a;
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: 700;
-      font-size: 9px;
+      font-size: 10px;
       color: #fff;
       text-transform: uppercase;
       overflow: hidden;
       font-family: 'Courier New', monospace;
       flex-shrink: 0;
+      transition: all 0.3s ease;
+    }
+
+    /* Keep avatar styling consistent - only border changes */
+    .profile-trigger.guest .profile-avatar {
+      border-color: rgba(255, 235, 59, 0.6);
+    }
+
+    .profile-trigger.authenticated .profile-avatar {
+      border-color: rgba(74, 222, 128, 0.6);
     }
 
     .profile-avatar img {
@@ -230,6 +354,10 @@ export class ProfileDropdown extends LitElement {
       opacity: 1;
       visibility: visible;
     }
+    
+    .profile-overlay.active .profile-modal {
+      transform: translateY(0) scale(1) rotateX(0);
+    }
 
     /* Revolutionary Command Profile Interface */
     .profile-modal {
@@ -237,22 +365,22 @@ export class ProfileDropdown extends LitElement {
         linear-gradient(135deg, #0a1f0a 0%, #051505 50%, #020a02 100%),
         radial-gradient(ellipse at top, rgba(74, 95, 58, 0.15) 0%, transparent 70%),
         radial-gradient(ellipse at bottom, rgba(26, 47, 26, 0.1) 0%, transparent 70%);
-      border: 4px solid transparent;
+      border: 2px solid transparent;
       background-clip: padding-box;
-      border-radius: 32px;
+      border-radius: 16px;
       width: 100%;
-      max-width: 750px;
-      max-height: 80vh;
+      max-width: 650px;
+      max-height: 85vh;
       overflow-y: auto;
-      transform: translateY(40px) scale(0.85) rotateX(8deg);
-      transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+      transform: translateY(20px) scale(0.95) rotateX(4deg);
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
       box-shadow: 
-        0 60px 120px rgba(0, 0, 0, 0.8),
-        0 30px 60px rgba(74, 95, 58, 0.2),
-        0 15px 30px rgba(143, 188, 143, 0.1),
+        0 30px 60px rgba(0, 0, 0, 0.7),
+        0 15px 30px rgba(74, 95, 58, 0.2),
+        0 8px 16px rgba(143, 188, 143, 0.1),
         0 0 0 1px rgba(74, 95, 58, 0.4),
-        inset 0 2px 0 rgba(255, 255, 255, 0.1),
-        inset 0 -2px 0 rgba(0, 0, 0, 0.3);
+        inset 0 1px 0 rgba(255, 255, 255, 0.1),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.3);
       position: relative;
       /* Custom scrollbar */
       scrollbar-width: thin;
@@ -277,107 +405,149 @@ export class ProfileDropdown extends LitElement {
       background: rgba(143, 188, 143, 0.5);
     }
 
-    /* Mobile Responsive Design - ENHANCED */
+    /* Disable animations on mobile for better performance */
     @media (max-width: 768px) {
-      /* Profile trigger button optimization */
+      * {
+        animation-duration: 0s !important;
+        animation-delay: 0s !important;
+        transition-duration: 0.1s !important;
+      }
+      
+      .profile-trigger::before {
+        display: none;  /* Remove shine effect on mobile */
+      }
+      
+      .auth-button--primary {
+        animation: none !important;  /* Disable glow animation */
+      }
+    }
+    
+    /* Tablet Responsive Design (768px - 1024px) */
+    @media (min-width: 768px) and (max-width: 1024px) {
       .profile-trigger {
-        font-size: 10px;
-        padding: 4px 6px;
-        gap: 4px;
-        letter-spacing: 0.3px;
+        font-size: 12px;
+        padding: 11px 18px;
+        gap: 7px;
+        letter-spacing: 0.9px;
       }
       
       .profile-avatar {
-        width: 18px;
-        height: 18px;
-        font-size: 8px;
-        border-width: 1px;
+        width: 22px;
+        height: 22px;
+        font-size: 10px;
+      }
+      
+      .profile-modal {
+        max-width: 90vw;
+        max-height: 85vh;
+      }
+    }
+    
+    /* Mobile Responsive Design - ENHANCED */
+    @media (max-width: 768px) {
+      /* Profile trigger button optimization - Increased touch target */
+      .profile-trigger {
+        font-size: 12px;  /* Increased from 11px for better readability */
+        padding: 12px 18px; /* Increased padding for better touch target (min 44px height) */
+        gap: 8px;
+        letter-spacing: 0.8px;
+        min-height: 44px;  /* Ensure minimum touch target height */
+      }
+      
+      .profile-avatar {
+        width: 24px;  /* Increased from 20px */
+        height: 24px;
+        font-size: 10px;  /* Increased from 9px */
+        border-width: 2px;
+      }
+      
+      .guest-caution-badge,
+      .auth-check-badge {
+        width: 22px;  /* Slightly larger */
+        height: 22px;
+        font-size: 13px;
+        top: -10px;
+        right: -10px;
       }
       
       .profile-username {
-        font-size: 10px;
-        max-width: 70px;
+        font-size: 12px;  /* Increased from 10px for better readability */
+        max-width: 80px;  /* Slightly wider */
         letter-spacing: 0.3px;
       }
       
       /* Modal optimizations */
       .profile-overlay {
-        padding: 10px;
+        padding: 12px;  /* More padding for edge protection */
+        display: flex;
+        align-items: flex-start;  /* Align to top on mobile */
+        padding-top: 40px;  /* Space from top for status bar */
       }
       
       .profile-modal {
-        max-width: 95vw;
-        max-height: 90vh;
-        border-radius: 16px;
-        margin: 0;
-        border-width: 2px;
+        max-width: calc(100vw - 24px);  /* Account for padding */
+        max-height: calc(100vh - 60px);  /* Leave space at top/bottom */
+        border-radius: 12px;
+        margin: 0 auto;
+        border-width: 1px;
+        transform: translateY(0) scale(1) rotateX(0);  /* Remove 3D transform on mobile */
       }
 
       .command-header {
-        padding: 20px 16px 0 16px;
-      }
-      
-      .command-header::before {
-        font-size: 10px;
-        letter-spacing: 1px;
+        padding: 12px 16px;  /* More vertical padding */
       }
 
-      .operator-card {
-        grid-template-columns: 60px 1fr;
-        gap: 12px;
+      .profile-header-content {
+        gap: 16px;
+        flex-wrap: wrap;  /* Allow wrapping on very small screens */
       }
 
-      .clearance-badge {
-        grid-column: 1 / -1;
-        margin-top: 12px;
-        padding: 12px;
-        align-self: center;
-        justify-self: center;
+      .flag-square-border {
+        width: 48px;  /* Slightly larger for better touch */
+        height: 36px;
       }
 
-      .operator-avatar {
-        width: 60px;
-        height: 60px;
-        font-size: 24px;
-        border: 3px solid #5a7f4a;
+      .flag-placeholder {
+        font-size: 20px;
       }
       
       .operator-info {
-        gap: 4px;
+        gap: 6px;
       }
       
       .operator-rank {
-        font-size: 11px;
+        font-size: 12px;  /* Minimum readable size */
         letter-spacing: 1px;
       }
 
       .operator-name {
-        font-size: 20px;
-        letter-spacing: 1.5px;
+        font-size: 16px;  /* Slightly larger */
+        letter-spacing: 1px;
+        line-height: 1.2;
       }
       
       .operator-designation {
-        font-size: 10px;
+        font-size: 11px;  /* Increased from 10px */
       }
       
       .clearance-level {
-        font-size: 18px;
+        font-size: 14px;
       }
       
       .clearance-status {
-        font-size: 9px;
+        font-size: 10px;  /* Minimum readable size */
       }
 
       .achievements-section,
       .medals-section,
       .stats-dashboard {
-        padding: 20px 16px;
+        padding: 12px 16px;
       }
       
       .achievements-title,
       .stats-title {
-        font-size: 14px;
-        letter-spacing: 1px;
+        font-size: 11px;
+        letter-spacing: 0.5px;
       }
 
       .medals-grid {
@@ -386,83 +556,86 @@ export class ProfileDropdown extends LitElement {
       }
       
       .achievement-path {
-        padding: 16px;
+        padding: 8px;
       }
       
       .path-name {
-        font-size: 12px;
+        font-size: 9px;
       }
       
       .tier-icon {
-        font-size: 24px;
+        font-size: 14px;
       }
       
       .tier-name {
-        font-size: 14px;
+        font-size: 9px;
       }
 
       .stats-grid {
         grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
+        gap: 6px;
       }
       
       .stat-card {
-        padding: 16px;
+        padding: 8px;
       }
       
       .stat-primary {
-        font-size: 24px;
+        font-size: 14px;
       }
       
       .stat-label {
-        font-size: 10px;
+        font-size: 8px;
       }
       
       .stat-secondary {
-        font-size: 12px;
+        font-size: 9px;
       }
       
       .upgrade-section {
-        padding: 20px 16px;
+        padding: 12px 16px;
       }
       
       .upgrade-content {
         flex-direction: column;
         text-align: center;
-        gap: 12px;
+        gap: 8px;
       }
       
       .upgrade-icon {
-        font-size: 28px;
+        font-size: 20px;
       }
       
       .upgrade-title {
-        font-size: 16px;
+        font-size: 12px;
       }
       
       .upgrade-subtitle {
-        font-size: 11px;
+        font-size: 9px;
       }
       
       .upgrade-btn-large {
         width: 100%;
-        padding: 14px 20px;
-        font-size: 13px;
+        padding: 10px 16px;
+        font-size: 11px;
       }
 
       .dropdown-items {
-        padding: 12px 0;
+        padding: 16px 0;
       }
 
       .dropdown-item {
-        padding: 12px 16px;
-        font-size: 12px;
-        gap: 10px;
+        padding: 16px 20px;  /* Increased for better touch targets */
+        font-size: 13px;  /* More readable */
+        gap: 12px;
+        min-height: 48px;  /* Ensure minimum touch target */
+        display: flex;
+        align-items: center;
       }
       
       .dropdown-icon {
-        width: 18px;
-        height: 18px;
+        width: 20px;  /* Slightly larger icons */
+        height: 20px;
       }
       
       .guest-warning {
@@ -490,121 +663,127 @@ export class ProfileDropdown extends LitElement {
     }
 
     @media (max-width: 480px) {
-      /* Ultra-compact profile trigger */
+      /* Maintain minimum touch targets and readability */
       .profile-trigger {
-        font-size: 9px;
-        padding: 3px 5px;
-        gap: 3px;
-        letter-spacing: 0.3px;
+        font-size: 11px;  /* No smaller than 11px for readability */
+        padding: 10px 14px;  /* Maintain touch target */
+        gap: 6px;
+        letter-spacing: 0.5px;
+        min-height: 44px;  /* Ensure minimum touch target */
       }
       
       .profile-avatar {
-        width: 16px;
-        height: 16px;
-        font-size: 8px;
+        width: 20px;  /* Keep reasonable size */
+        height: 20px;
+        font-size: 9px;  /* Minimum 9px */
       }
       
       .profile-username {
-        font-size: 9px;
-        max-width: 60px;
+        font-size: 11px;  /* No smaller than 11px */
+        max-width: 70px;
         letter-spacing: 0.2px;
       }
       
       /* Modal fine-tuning for small screens */
       .profile-modal {
-        border-radius: 12px;
+        border-radius: 8px;
         max-height: 95vh;
       }
 
       .command-header {
-        padding: 16px 12px 0 12px;
+        padding: 8px 12px 0 12px;
       }
 
       .operator-avatar {
-        width: 50px;
-        height: 50px;
-        font-size: 20px;
-        border: 2px solid #5a7f4a;
+        width: 32px;  /* Slightly larger */
+        height: 32px;
+        font-size: 14px;
+        border: 1px solid #5a7f4a;
       }
 
       .operator-name {
-        font-size: 18px;
-        letter-spacing: 1px;
+        font-size: 14px;  /* Keep readable */
+        letter-spacing: 0.5px;
       }
 
       .clearance-level {
-        font-size: 16px;
+        font-size: 12px;  /* Keep readable */
       }
       
       .clearance-badge {
-        padding: 10px;
+        padding: 6px;
       }
 
       .achievements-section,
       .medals-section,
       .stats-dashboard {
-        padding: 16px 12px;
+        padding: 8px 12px;
       }
 
       .medals-grid,
       .stats-grid {
         grid-template-columns: 1fr;
-        gap: 10px;
+        gap: 6px;
       }
       
       .achievement-path {
-        padding: 12px;
+        padding: 6px;
       }
 
       .stat-primary {
-        font-size: 20px;
+        font-size: 12px;
       }
       
       .stat-card {
-        padding: 12px;
+        padding: 6px;
       }
 
       .medal-icon {
-        font-size: 24px;
+        font-size: 12px;
       }
 
       .dropdown-item {
-        padding: 10px 12px;
-        font-size: 11px;
+        padding: 12px 16px;  /* Better touch target even on small screens */
+        font-size: 11px;  /* Minimum readable size */
         gap: 8px;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.3px;
+        min-height: 40px;  /* Ensure touch target */
       }
 
       .close-button {
-        width: 32px;
-        height: 32px;
-        font-size: 16px;
+        width: 36px;  /* Minimum touch target size */
+        height: 36px;
+        font-size: 16px;  /* Larger X */
         top: 12px;
         right: 12px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
       
       .guest-warning {
-        margin: 12px;
-        padding: 12px;
+        margin: 8px;
+        padding: 8px;
       }
       
       .guest-warning-icon {
-        font-size: 28px;
-        margin-bottom: 8px;
+        font-size: 20px;
+        margin-bottom: 6px;
       }
       
       .guest-warning-title {
-        font-size: 13px;
+        font-size: 11px;
       }
       
       .guest-warning-text {
-        font-size: 11px;
-        line-height: 1.4;
+        font-size: 9px;
+        line-height: 1.3;
       }
       
       .guest-upgrade-btn {
-        padding: 8px 16px;
-        font-size: 11px;
+        padding: 6px 12px;
+        font-size: 9px;
       }
     }
 
@@ -662,37 +841,134 @@ export class ProfileDropdown extends LitElement {
       box-shadow: 0 0 20px rgba(255, 87, 87, 0.4);
     }
 
-    /* Command Header Interface */
+    /* Clean Profile Header */
     .command-header {
       position: relative;
-      padding: 40px 40px 0 40px;
+      padding: 32px;
       background: 
-        linear-gradient(135deg, rgba(74, 95, 58, 0.1) 0%, rgba(26, 47, 26, 0.15) 100%);
-      border-bottom: 3px solid rgba(74, 95, 58, 0.3);
+        linear-gradient(135deg, rgba(0, 0, 0, 0.3) 0%, rgba(26, 47, 26, 0.1) 100%);
+      border-bottom: 2px solid rgba(74, 95, 58, 0.2);
       z-index: 10;
     }
 
-    .command-header::before {
-      content: '◤ SOVEREIGN COMMAND INTERFACE ◥';
-      position: absolute;
-      top: 16px;
-      left: 50%;
-      transform: translateX(-50%);
-      color: #8fbc8f;
-      font-size: 12px;
-      font-weight: 700;
-      font-family: 'Courier New', monospace;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      opacity: 0.8;
+    .profile-header-content {
+      display: flex;
+      align-items: center;
+      gap: 24px;
     }
 
-    .operator-card {
-      display: grid;
-      grid-template-columns: auto 1fr auto;
-      gap: 24px;
+    /* Square Flag Design */
+    .flag-square {
+      position: relative;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    .flag-square:hover {
+      transform: translateY(-2px);
+    }
+
+    .flag-square-border {
+      width: 80px;
+      height: 60px;
+      position: relative;
+      border: 2px solid transparent;
+      border-radius: 4px;
+      background: linear-gradient(135deg, #4a5f3a 0%, #5a7f4a 50%, #3a4f2a 100%);
+      background-clip: border-box;
+      transition: all 0.3s ease;
+      box-shadow: 
+        0 2px 8px rgba(0, 0, 0, 0.3),
+        0 0 12px rgba(74, 95, 58, 0.2);
+    }
+
+    .flag-square-border:hover {
+      background: linear-gradient(135deg, #5a7f4a 0%, #6a9f5a 50%, #4a6f3a 100%);
+      box-shadow: 
+        0 4px 12px rgba(0, 0, 0, 0.4),
+        0 0 20px rgba(90, 127, 58, 0.3);
+    }
+
+    /* VIP Border Styles */
+    .flag-square-border.vip-gold {
+      background: linear-gradient(135deg, #ffd700 0%, #ffed4e 50%, #ff9500 100%);
+      box-shadow: 
+        0 2px 8px rgba(255, 215, 0, 0.3),
+        0 0 16px rgba(255, 215, 0, 0.2);
+    }
+
+    .flag-square-border.vip-gold:hover {
+      box-shadow: 
+        0 4px 12px rgba(255, 215, 0, 0.4),
+        0 0 24px rgba(255, 215, 0, 0.3);
+    }
+
+    .flag-square-border.vip-diamond {
+      background: linear-gradient(135deg, #e0e0e0 0%, #ffffff 50%, #b0b0b0 100%);
+      box-shadow: 
+        0 2px 8px rgba(255, 255, 255, 0.3),
+        0 0 16px rgba(255, 255, 255, 0.2);
+    }
+
+    .flag-square-border.vip-diamond:hover {
+      box-shadow: 
+        0 4px 12px rgba(255, 255, 255, 0.4),
+        0 0 24px rgba(255, 255, 255, 0.3);
+    }
+
+    .flag-square-border.vip-animated {
+      background: linear-gradient(
+        135deg,
+        #ff0000 0%,
+        #ff7f00 17%,
+        #ffff00 33%,
+        #00ff00 50%,
+        #0000ff 67%,
+        #4b0082 83%,
+        #9400d3 100%
+      );
+      background-size: 200% 200%;
+      animation: rainbowShift 3s ease-in-out infinite;
+    }
+
+    .flag-square-inner {
+      width: calc(100% - 4px);
+      height: calc(100% - 4px);
+      margin: 2px;
+      border-radius: 2px;
+      overflow: hidden;
+      display: flex;
       align-items: center;
-      margin-bottom: 24px;
+      justify-content: center;
+      background: #000;
+    }
+
+    .flag-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .flag-placeholder {
+      font-size: 32px;
+      color: #4a5f3a;
+      font-weight: bold;
+      font-family: 'Courier New', monospace;
+    }
+
+    /* User Info Section */
+    .user-info-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .user-level {
+      font-size: 14px;
+      color: #8fbc8f;
+      font-family: 'Courier New', monospace;
+      opacity: 0.8;
     }
 
     .operator-avatar {
@@ -719,6 +995,29 @@ export class ProfileDropdown extends LitElement {
         0 0 30px rgba(143, 188, 143, 0.3),
         inset 0 4px 0 rgba(255, 255, 255, 0.2),
         inset 0 -4px 0 rgba(0, 0, 0, 0.3);
+    }
+
+    .operator-avatar.flag-avatar {
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .operator-avatar.flag-avatar:hover {
+      transform: scale(1.05);
+      border-color: #8fbc8f;
+      box-shadow: 
+        0 20px 50px rgba(0, 0, 0, 0.7),
+        0 10px 25px rgba(74, 95, 58, 0.5),
+        0 0 40px rgba(143, 188, 143, 0.4),
+        inset 0 4px 0 rgba(255, 255, 255, 0.3),
+        inset 0 -4px 0 rgba(0, 0, 0, 0.4);
+    }
+
+    .flag-full {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
     }
 
     .operator-avatar::before {
@@ -751,38 +1050,87 @@ export class ProfileDropdown extends LitElement {
     .operator-info {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 4px;
     }
 
     .operator-rank {
-      font-size: 14px;
+      font-size: 10px;
       font-weight: 600;
       color: #8fbc8f;
       text-transform: uppercase;
-      letter-spacing: 2px;
+      letter-spacing: 1px;
       opacity: 0.9;
       font-family: 'Courier New', monospace;
     }
 
     .operator-name {
-      font-size: 32px;
-      font-weight: 900;
+      font-size: 18px;
+      font-weight: 700;
       color: #ffffff;
       text-transform: uppercase;
-      letter-spacing: 3px;
+      letter-spacing: 1.5px;
       font-family: 'Courier New', monospace;
       text-shadow: 
-        0 4px 8px rgba(0, 0, 0, 0.8),
-        0 0 20px rgba(143, 188, 143, 0.4);
+        0 2px 4px rgba(0, 0, 0, 0.8),
+        0 0 12px rgba(143, 188, 143, 0.4);
       position: relative;
     }
 
-    .operator-designation {
+    .operator-name.editable {
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .operator-name.editable:hover {
+      color: #8fbc8f;
+      text-shadow: 
+        0 2px 4px rgba(0, 0, 0, 0.8),
+        0 0 16px rgba(143, 188, 143, 0.6);
+    }
+
+    .edit-icon {
       font-size: 12px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .operator-name.editable:hover .edit-icon {
+      opacity: 0.7;
+    }
+
+    .operator-name-input {
+      background: rgba(0, 0, 0, 0.6);
+      border: 2px solid #8fbc8f;
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 16px;
+      font-weight: 700;
+      color: #ffffff;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      font-family: 'Courier New', monospace;
+      text-shadow: 
+        0 2px 4px rgba(0, 0, 0, 0.8),
+        0 0 12px rgba(143, 188, 143, 0.4);
+      width: 100%;
+      transition: all 0.3s ease;
+    }
+
+    .operator-name-input:focus {
+      outline: none;
+      background: rgba(0, 0, 0, 0.8);
+      box-shadow: 0 0 30px rgba(143, 188, 143, 0.4);
+    }
+
+    .operator-designation {
+      font-size: 8px;
       font-weight: 600;
       color: #4a6f3a;
       text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 0.5px;
       opacity: 0.8;
       font-family: 'Courier New', monospace;
     }
@@ -791,21 +1139,21 @@ export class ProfileDropdown extends LitElement {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 8px;
-      padding: 16px;
+      gap: 4px;
+      padding: 8px;
       background: 
         radial-gradient(circle, rgba(74, 95, 58, 0.2) 0%, rgba(26, 47, 26, 0.1) 100%);
-      border: 2px solid rgba(143, 188, 143, 0.4);
-      border-radius: 16px;
+      border: 1px solid rgba(143, 188, 143, 0.4);
+      border-radius: 8px;
       position: relative;
     }
 
     .clearance-level {
-      font-size: 24px;
-      font-weight: 900;
+      font-size: 16px;
+      font-weight: 700;
       color: #8fbc8f;
       font-family: 'Courier New', monospace;
-      text-shadow: 0 0 10px rgba(143, 188, 143, 0.5);
+      text-shadow: 0 0 8px rgba(143, 188, 143, 0.5);
     }
 
     .clearance-status {
@@ -831,14 +1179,14 @@ export class ProfileDropdown extends LitElement {
 
     /* Command Interface Header */
     .dropdown-header {
-      padding: 24px 28px;
+      padding: 8px 16px;
       background: 
         linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, rgba(74, 95, 58, 0.1) 100%),
         linear-gradient(45deg, rgba(26, 47, 26, 0.3) 0%, rgba(15, 31, 15, 0.4) 100%);
-      border-bottom: 2px solid rgba(74, 95, 58, 0.4);
+      border-bottom: 1px solid rgba(74, 95, 58, 0.4);
       display: flex;
       align-items: center;
-      gap: 20px;
+      gap: 8px;
       position: relative;
       z-index: 2;
     }
@@ -855,16 +1203,16 @@ export class ProfileDropdown extends LitElement {
     }
 
     .dropdown-avatar {
-      width: 60px;
-      height: 60px;
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
       background: linear-gradient(135deg, #4a5f3a 0%, #3a4f2a 100%);
-      border: 3px solid #5a7f3a;
+      border: 2px solid #5a7f3a;
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: 700;
-      font-size: 24px;
+      font-size: 14px;
       color: #fff;
       text-transform: uppercase;
       overflow: hidden;
@@ -883,17 +1231,17 @@ export class ProfileDropdown extends LitElement {
     }
 
     .dropdown-username {
-      font-size: 18px;
+      font-size: 14px;
       font-weight: 700;
       color: #8fbc8f;
-      margin: 0 0 4px 0;
+      margin: 0 0 2px 0;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
 
     .dropdown-email {
-      font-size: 13px;
+      font-size: 11px;
       color: rgba(143, 188, 143, 0.7);
       overflow: hidden;
       text-overflow: ellipsis;
@@ -902,10 +1250,10 @@ export class ProfileDropdown extends LitElement {
 
     /* Achievements Section */
     .achievements-section {
-      padding: 24px 20px;
+      padding: 6px 16px;
       background: 
         linear-gradient(135deg, rgba(0, 0, 0, 0.3) 0%, rgba(26, 47, 26, 0.15) 100%);
-      border-bottom: 3px solid rgba(74, 95, 58, 0.3);
+      border-bottom: 1px solid rgba(74, 95, 58, 0.3);
       position: relative;
       z-index: 10;
     }
@@ -914,34 +1262,34 @@ export class ProfileDropdown extends LitElement {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 16px;
-      margin-bottom: 16px;
+      gap: 4px;
+      margin-bottom: 4px;
       position: relative;
     }
 
     .achievements-title {
-      font-size: 18px;
-      font-weight: 900;
+      font-size: 12px;
+      font-weight: 700;
       color: #8fbc8f;
       text-transform: uppercase;
-      letter-spacing: 2px;
+      letter-spacing: 1px;
       font-family: 'Courier New', monospace;
-      text-shadow: 0 0 12px rgba(143, 188, 143, 0.4);
+      text-shadow: 0 0 8px rgba(143, 188, 143, 0.4);
     }
 
     .medals-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 24px;
-      margin-bottom: 32px;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 4px;
+      margin-bottom: 6px;
     }
 
     .achievement-path {
-      padding: 24px;
+      padding: 4px;
       background: 
         linear-gradient(135deg, rgba(74, 95, 58, 0.1) 0%, rgba(26, 47, 26, 0.15) 100%);
-      border: 2px solid rgba(74, 95, 58, 0.4);
-      border-radius: 16px;
+      border: 1px solid rgba(74, 95, 58, 0.4);
+      border-radius: 4px;
       position: relative;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
@@ -959,18 +1307,18 @@ export class ProfileDropdown extends LitElement {
     }
 
     .path-header {
-      margin-bottom: 16px;
+      margin-bottom: 2px;
       text-align: center;
     }
 
     .path-name {
-      font-size: 14px;
-      font-weight: 900;
+      font-size: 10px;
+      font-weight: 700;
       color: #8fbc8f;
       text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 0.5px;
       font-family: 'Courier New', monospace;
-      margin-bottom: 4px;
+      margin-bottom: 2px;
     }
 
     .achievement-path.earned .path-name {
@@ -979,7 +1327,7 @@ export class ProfileDropdown extends LitElement {
     }
 
     .path-subtitle {
-      font-size: 10px;
+      font-size: 8px;
       color: rgba(143, 188, 143, 0.7);
       font-style: italic;
       font-family: 'Courier New', monospace;
@@ -988,13 +1336,13 @@ export class ProfileDropdown extends LitElement {
     .current-tier {
       display: flex;
       align-items: center;
-      gap: 16px;
-      margin-bottom: 12px;
+      gap: 4px;
+      margin-bottom: 2px;
     }
 
     .tier-icon {
-      font-size: 32px;
-      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6));
+      font-size: 16px;
+      filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.6));
     }
 
     .achievement-path.earned .tier-icon {
@@ -1015,13 +1363,13 @@ export class ProfileDropdown extends LitElement {
     }
 
     .tier-name {
-      font-size: 16px;
+      font-size: 10px;
       font-weight: 700;
       color: #8fbc8f;
       text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 0.5px;
       font-family: 'Courier New', monospace;
-      margin-bottom: 4px;
+      margin-bottom: 2px;
     }
 
     .achievement-path.earned .tier-name {
@@ -1029,29 +1377,29 @@ export class ProfileDropdown extends LitElement {
     }
 
     .tier-progress {
-      font-size: 12px;
+      font-size: 8px;
       color: rgba(143, 188, 143, 0.8);
       font-family: 'Courier New', monospace;
     }
 
     .progress-container {
-      margin-top: 16px;
+      margin-top: 2px;
     }
 
     .next-tier {
-      font-size: 10px;
+      font-size: 8px;
       color: rgba(143, 188, 143, 0.6);
       text-align: center;
-      margin-top: 8px;
+      margin-top: 2px;
       font-family: 'Courier New', monospace;
     }
 
     /* Advanced Stats Dashboard */
     .stats-dashboard {
-      padding: 32px 40px;
+      padding: 6px 16px;
       background: 
         linear-gradient(135deg, rgba(0, 0, 0, 0.4) 0%, rgba(26, 47, 26, 0.2) 100%);
-      border-bottom: 3px solid rgba(74, 95, 58, 0.3);
+      border-bottom: 1px solid rgba(74, 95, 58, 0.3);
       position: relative;
       z-index: 10;
     }
@@ -1060,32 +1408,32 @@ export class ProfileDropdown extends LitElement {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 16px;
-      margin-bottom: 24px;
+      gap: 4px;
+      margin-bottom: 4px;
     }
 
     .stats-title {
-      font-size: 18px;
-      font-weight: 900;
+      font-size: 12px;
+      font-weight: 700;
       color: #8fbc8f;
       text-transform: uppercase;
-      letter-spacing: 2px;
+      letter-spacing: 1px;
       font-family: 'Courier New', monospace;
-      text-shadow: 0 0 12px rgba(143, 188, 143, 0.4);
+      text-shadow: 0 0 8px rgba(143, 188, 143, 0.4);
     }
 
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 24px;
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      gap: 4px;
     }
 
     .stat-card {
-      padding: 24px;
+      padding: 4px;
       background: 
         linear-gradient(135deg, rgba(74, 95, 58, 0.15) 0%, rgba(26, 47, 26, 0.1) 100%);
-      border: 2px solid rgba(74, 95, 58, 0.4);
-      border-radius: 16px;
+      border: 1px solid rgba(74, 95, 58, 0.4);
+      border-radius: 4px;
       position: relative;
       overflow: hidden;
     }
@@ -1102,51 +1450,51 @@ export class ProfileDropdown extends LitElement {
     }
 
     .stat-primary {
-      font-size: 32px;
-      font-weight: 900;
+      font-size: 14px;
+      font-weight: 700;
       color: #8fbc8f;
-      margin-bottom: 8px;
-      text-shadow: 0 0 12px rgba(143, 188, 143, 0.5);
+      margin-bottom: 2px;
+      text-shadow: 0 0 8px rgba(143, 188, 143, 0.5);
       font-family: 'Courier New', monospace;
       line-height: 1;
     }
 
     .stat-label {
-      font-size: 12px;
+      font-size: 7px;
       color: rgba(143, 188, 143, 0.8);
       text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 0.3px;
       font-weight: 600;
       font-family: 'Courier New', monospace;
-      margin-bottom: 12px;
+      margin-bottom: 1px;
     }
 
     .stat-secondary {
-      font-size: 14px;
+      font-size: 10px;
       color: #4a6f3a;
       font-family: 'Courier New', monospace;
     }
 
     .progress-bar {
       width: 100%;
-      height: 6px;
+      height: 2px;
       background: rgba(26, 47, 26, 0.3);
-      border-radius: 3px;
+      border-radius: 1px;
       overflow: hidden;
-      margin-top: 8px;
+      margin-top: 2px;
     }
 
     .progress-fill {
       height: 100%;
       background: linear-gradient(90deg, #4a5f3a, #8fbc8f);
-      border-radius: 3px;
+      border-radius: 2px;
       transition: width 0.8s ease;
-      box-shadow: 0 0 8px rgba(143, 188, 143, 0.4);
+      box-shadow: 0 0 4px rgba(143, 188, 143, 0.4);
     }
 
     /* Command Menu Interface */
     .dropdown-items {
-      padding: 16px 0;
+      padding: 4px 0;
       position: relative;
       z-index: 2;
     }
@@ -1154,19 +1502,19 @@ export class ProfileDropdown extends LitElement {
     .dropdown-item {
       display: flex;
       align-items: center;
-      gap: 16px;
-      padding: 16px 28px;
+      gap: 6px;
+      padding: 6px 16px;
       color: #8fbc8f;
       text-decoration: none;
       cursor: pointer;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
-      font-size: 14px;
+      font-size: 10px;
       font-weight: 600;
       font-family: 'Courier New', monospace;
       text-transform: uppercase;
-      letter-spacing: 1px;
-      border-left: 4px solid transparent;
+      letter-spacing: 0.3px;
+      border-left: 2px solid transparent;
     }
 
     .dropdown-item::before {
@@ -1188,8 +1536,8 @@ export class ProfileDropdown extends LitElement {
         linear-gradient(90deg, rgba(74, 95, 58, 0.3) 0%, rgba(74, 95, 58, 0.1) 100%);
       color: #ffffff;
       border-left-color: #8fbc8f;
-      text-shadow: 0 0 8px rgba(143, 188, 143, 0.4);
-      transform: translateX(8px);
+      text-shadow: 0 0 6px rgba(143, 188, 143, 0.4);
+      transform: translateX(4px);
     }
 
     .dropdown-item:hover::before {
@@ -1197,15 +1545,15 @@ export class ProfileDropdown extends LitElement {
     }
 
     .dropdown-icon {
-      width: 20px;
-      height: 20px;
+      width: 16px;
+      height: 16px;
       opacity: 0.7;
     }
 
     .dropdown-divider {
       height: 1px;
       background: rgba(74, 95, 58, 0.2);
-      margin: 8px 0;
+      margin: 4px 0;
     }
 
     .dropdown-item.danger {
@@ -1220,27 +1568,27 @@ export class ProfileDropdown extends LitElement {
     /* Upgrade button styles */
     .upgrade-btn {
       background: linear-gradient(135deg, #8fbc8f 0%, #4a5f3a 100%);
-      border: 2px solid #4a5f3a;
+      border: 1px solid #4a5f3a;
       color: white;
-      padding: 6px 16px;
-      border-radius: 6px;
+      padding: 4px 12px;
+      border-radius: 4px;
       font-family: 'Courier New', monospace;
       font-weight: 700;
-      font-size: 11px;
+      font-size: 9px;
       cursor: pointer;
       transition: all 0.3s ease;
       text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 0.5px;
     }
 
     .upgrade-btn:hover {
       background: linear-gradient(135deg, #7aa67a 0%, #3a4f2a 100%);
       transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(74, 95, 58, 0.4);
+      box-shadow: 0 2px 8px rgba(74, 95, 58, 0.4);
     }
 
     .upgrade-card {
-      border: 2px solid #8fbc8f;
+      border: 1px solid #8fbc8f;
       background: linear-gradient(135deg, rgba(143, 188, 143, 0.1) 0%, rgba(74, 95, 58, 0.05) 100%);
     }
 
@@ -1272,16 +1620,16 @@ export class ProfileDropdown extends LitElement {
 
     /* Upgrade Section Styles */
     .upgrade-section {
-      padding: 24px 40px 32px 40px;
+      padding: 12px 16px 16px 16px;
       position: relative;
       z-index: 10;
     }
 
     .upgrade-card-standalone {
       background: linear-gradient(135deg, rgba(143, 188, 143, 0.15) 0%, rgba(74, 95, 58, 0.1) 100%);
-      border: 2px solid rgba(143, 188, 143, 0.4);
-      border-radius: 16px;
-      padding: 24px;
+      border: 1px solid rgba(143, 188, 143, 0.4);
+      border-radius: 8px;
+      padding: 12px;
       position: relative;
       overflow: hidden;
     }
@@ -1289,12 +1637,12 @@ export class ProfileDropdown extends LitElement {
     .upgrade-card-standalone::before {
       content: '';
       position: absolute;
-      top: -2px;
-      left: -2px;
-      right: -2px;
-      bottom: -2px;
+      top: -1px;
+      left: -1px;
+      right: -1px;
+      bottom: -1px;
       background: linear-gradient(45deg, rgba(143, 188, 143, 0.3), rgba(74, 95, 58, 0.2));
-      border-radius: 18px;
+      border-radius: 9px;
       z-index: -1;
       animation: upgradeGlow 3s ease-in-out infinite;
     }
@@ -1307,12 +1655,12 @@ export class ProfileDropdown extends LitElement {
     .upgrade-content {
       display: flex;
       align-items: center;
-      gap: 20px;
+      gap: 8px;
       justify-content: space-between;
     }
 
     .upgrade-icon {
-      font-size: 32px;
+      font-size: 16px;
       flex-shrink: 0;
     }
 
@@ -1321,34 +1669,34 @@ export class ProfileDropdown extends LitElement {
     }
 
     .upgrade-title {
-      font-size: 18px;
-      font-weight: 900;
+      font-size: 10px;
+      font-weight: 700;
       color: #8fbc8f;
       text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 0.5px;
       font-family: 'Courier New', monospace;
-      margin-bottom: 4px;
+      margin-bottom: 2px;
     }
 
     .upgrade-subtitle {
-      font-size: 12px;
+      font-size: 8px;
       color: rgba(143, 188, 143, 0.8);
       font-family: 'Courier New', monospace;
     }
 
     .upgrade-btn-large {
       background: linear-gradient(135deg, #8fbc8f 0%, #4a5f3a 100%);
-      border: 2px solid #4a5f3a;
+      border: 1px solid #4a5f3a;
       color: white;
-      padding: 12px 24px;
-      border-radius: 8px;
+      padding: 6px 12px;
+      border-radius: 4px;
       font-family: 'Courier New', monospace;
       font-weight: 700;
-      font-size: 14px;
+      font-size: 9px;
       cursor: pointer;
       transition: all 0.3s ease;
       text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 0.5px;
       flex-shrink: 0;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     }
@@ -1404,12 +1752,12 @@ export class ProfileDropdown extends LitElement {
 
     /* Guest Warning Banner */
     .guest-warning {
-      margin: 24px 40px;
-      padding: 20px;
+      margin: 6px 16px;
+      padding: 8px;
       background: 
         linear-gradient(135deg, rgba(255, 193, 7, 0.1) 0%, rgba(255, 152, 0, 0.05) 100%);
-      border: 2px solid rgba(255, 193, 7, 0.4);
-      border-radius: 16px;
+      border: 1px solid rgba(255, 193, 7, 0.4);
+      border-radius: 6px;
       position: relative;
       overflow: hidden;
     }
@@ -1420,7 +1768,7 @@ export class ProfileDropdown extends LitElement {
       top: 0;
       left: 0;
       right: 0;
-      height: 3px;
+      height: 1px;
       background: linear-gradient(90deg, 
         transparent, 
         rgba(255, 193, 7, 0.8), 
@@ -1437,10 +1785,10 @@ export class ProfileDropdown extends LitElement {
     }
 
     .guest-warning-icon {
-      font-size: 48px;
+      font-size: 16px;
       text-align: center;
-      margin-bottom: 12px;
-      filter: drop-shadow(0 0 10px rgba(255, 193, 7, 0.5));
+      margin-bottom: 4px;
+      filter: drop-shadow(0 0 6px rgba(255, 193, 7, 0.5));
     }
 
     .guest-warning-content {
@@ -1448,37 +1796,37 @@ export class ProfileDropdown extends LitElement {
     }
 
     .guest-warning-title {
-      font-size: 18px;
-      font-weight: 900;
+      font-size: 10px;
+      font-weight: 700;
       color: #ffc107;
       text-transform: uppercase;
-      letter-spacing: 2px;
-      margin-bottom: 8px;
+      letter-spacing: 0.5px;
+      margin-bottom: 2px;
       font-family: 'Courier New', monospace;
-      text-shadow: 0 0 10px rgba(255, 193, 7, 0.5);
+      text-shadow: 0 0 6px rgba(255, 193, 7, 0.5);
     }
 
     .guest-warning-text {
-      font-size: 14px;
+      font-size: 8px;
       color: rgba(255, 255, 255, 0.8);
-      line-height: 1.6;
-      margin-bottom: 16px;
+      line-height: 1.3;
+      margin-bottom: 4px;
       font-family: 'Courier New', monospace;
     }
 
     .guest-upgrade-btn {
       background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
-      border: 2px solid #ff9800;
+      border: 1px solid #ff9800;
       color: #000;
-      padding: 12px 24px;
-      border-radius: 8px;
+      padding: 4px 8px;
+      border-radius: 4px;
       font-family: 'Courier New', monospace;
       font-weight: 700;
-      font-size: 14px;
+      font-size: 8px;
       cursor: pointer;
       transition: all 0.3s ease;
       text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 0.3px;
       box-shadow: 
         0 4px 12px rgba(255, 193, 7, 0.3),
         inset 0 1px 0 rgba(255, 255, 255, 0.3);
@@ -1486,29 +1834,29 @@ export class ProfileDropdown extends LitElement {
 
     .guest-upgrade-btn:hover {
       background: linear-gradient(135deg, #ffca28 0%, #ffa726 100%);
-      transform: translateY(-2px);
+      transform: translateY(-1px);
       box-shadow: 
-        0 6px 20px rgba(255, 193, 7, 0.4),
-        0 0 30px rgba(255, 193, 7, 0.2);
+        0 3px 10px rgba(255, 193, 7, 0.4),
+        0 0 15px rgba(255, 193, 7, 0.2);
     }
 
     /* Mobile responsive for guest warning */
     @media (max-width: 768px) {
       .guest-warning {
-        margin: 20px;
-        padding: 16px;
+        margin: 4px 12px;
+        padding: 6px;
       }
 
       .guest-warning-icon {
-        font-size: 36px;
+        font-size: 14px;
       }
 
       .guest-warning-title {
-        font-size: 16px;
+        font-size: 9px;
       }
 
       .guest-warning-text {
-        font-size: 13px;
+        font-size: 7px;
       }
     }
 
@@ -1526,15 +1874,280 @@ export class ProfileDropdown extends LitElement {
     .clickaway-overlay.active {
       display: block;
     }
+
+    /* Identity Configuration Section */
+    .identity-section {
+      padding: 6px 16px;
+      background: 
+        linear-gradient(135deg, rgba(0, 0, 0, 0.3) 0%, rgba(26, 47, 26, 0.15) 100%);
+      border-bottom: 1px solid rgba(74, 95, 58, 0.3);
+      position: relative;
+      z-index: 10;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 6px;
+    }
+
+    .section-title {
+      font-size: 10px;
+      font-weight: 700;
+      color: #8fbc8f;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-family: 'Courier New', monospace;
+      text-shadow: 0 0 8px rgba(143, 188, 143, 0.4);
+    }
+
+    .identity-controls {
+      display: grid;
+      gap: 6px;
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .control-label {
+      font-size: 8px;
+      font-weight: 700;
+      color: #8fbc8f;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      font-family: 'Courier New', monospace;
+    }
+
+    .callsign-input {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(74, 95, 58, 0.4);
+      border-radius: 4px;
+      padding: 4px 8px;
+      font-size: 10px;
+      font-weight: 700;
+      color: #ffffff;
+      font-family: 'Courier New', monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      transition: all 0.3s ease;
+      width: 100%;
+    }
+
+    .callsign-input:focus {
+      outline: none;
+      border-color: #8fbc8f;
+      background: rgba(0, 0, 0, 0.6);
+      box-shadow: 0 0 10px rgba(143, 188, 143, 0.2);
+    }
+
+    .callsign-input::placeholder {
+      color: rgba(143, 188, 143, 0.5);
+      text-transform: none;
+      font-weight: 400;
+    }
+
+    .control-hint {
+      font-size: 7px;
+      color: rgba(143, 188, 143, 0.6);
+      font-style: italic;
+      font-family: 'Courier New', monospace;
+    }
+
+    /* Flag Selector */
+    .flag-selector {
+      position: relative;
+    }
+
+    .current-flag {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 8px;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(74, 95, 58, 0.4);
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: 'Courier New', monospace;
+      font-weight: 600;
+      color: #ffffff;
+      position: relative;
+    }
+
+    .current-flag:hover {
+      border-color: #8fbc8f;
+      background: rgba(0, 0, 0, 0.6);
+    }
+
+    .flag-icon {
+      width: 24px;
+      height: 16px;
+      object-fit: cover;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 2px;
+    }
+
+    .flag-name {
+      flex: 1;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      font-size: 8px;
+    }
+
+    .no-flag {
+      color: rgba(143, 188, 143, 0.6);
+      font-style: italic;
+    }
+
+    .dropdown-arrow {
+      font-size: 8px;
+      color: #8fbc8f;
+    }
+
+    /* Flag Picker Modal */
+    .flag-picker-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10001;
+      padding: 20px;
+    }
+
+    .flag-picker {
+      background: 
+        linear-gradient(135deg, #0a1f0a 0%, #051505 100%);
+      border: 3px solid #3a5f3a;
+      border-radius: 16px;
+      max-width: 600px;
+      max-height: 80vh;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+    }
+
+    .flag-search {
+      margin: 20px;
+      padding: 12px 16px;
+      background: rgba(0, 0, 0, 0.4);
+      border: 2px solid rgba(74, 95, 58, 0.4);
+      border-radius: 8px;
+      color: #ffffff;
+      font-size: 14px;
+      font-family: 'Courier New', monospace;
+    }
+
+    .flag-search:focus {
+      outline: none;
+      border-color: #8fbc8f;
+    }
+
+    .flag-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 12px;
+      padding: 0 20px 20px 20px;
+      overflow-y: auto;
+      max-height: 60vh;
+    }
+
+    .flag-option {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 12px;
+      background: rgba(74, 95, 58, 0.1);
+      border: 2px solid transparent;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .flag-option:hover {
+      background: rgba(74, 95, 58, 0.3);
+      border-color: #8fbc8f;
+      transform: translateY(-2px);
+    }
+
+    .flag-option img {
+      width: 40px;
+      height: 28px;
+      object-fit: cover;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 2px;
+    }
+
+    .flag-option span {
+      font-size: 11px;
+      color: #8fbc8f;
+      text-align: center;
+      font-family: 'Courier New', monospace;
+    }
+
+    /* Mobile Responsive for Identity Section */
+    @media (max-width: 768px) {
+      .identity-section {
+        padding: 20px;
+      }
+
+      .section-title {
+        font-size: 14px;
+      }
+
+      .callsign-input,
+      .current-flag {
+        padding: 10px 14px;
+        font-size: 14px;
+      }
+
+      .flag-picker {
+        max-width: 95vw;
+      }
+
+      .flag-grid {
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+        gap: 8px;
+      }
+
+      .flag-option {
+        padding: 8px;
+      }
+
+      .flag-option img {
+        width: 32px;
+        height: 22px;
+      }
+
+      .flag-option span {
+        font-size: 10px;
+      }
+    }
   `;
 
   connectedCallback() {
     super.connectedCallback();
     this.updateAuthState();
     
+    // Load stored flag
+    this.currentFlag = localStorage.getItem('flag') || '';
+    
     // Listen for auth state changes
     window.addEventListener('auth-state-changed', this.updateAuthState.bind(this));
     window.addEventListener('login-success', this.updateAuthState.bind(this));
+    
+    // Listen for username changes to update in real-time
+    window.addEventListener('username-changed', this.handleUsernameChanged.bind(this));
     
     // Listen for stats updates
     window.addEventListener('stats-updated', this.handleStatsUpdate.bind(this));
@@ -1542,12 +2155,17 @@ export class ProfileDropdown extends LitElement {
     
     // Handle moving between header and main section
     window.addEventListener('auth-state-changed', this.updatePosition.bind(this));
+    
+    // Listen for open-profile-dropdown event from UsernameInput
+    window.addEventListener('open-profile-dropdown', this.handleOpenProfileDropdown.bind(this));
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
     window.removeEventListener('auth-state-changed', this.updateAuthState.bind(this));
     window.removeEventListener('login-success', this.updateAuthState.bind(this));
+    window.removeEventListener('username-changed', this.handleUsernameChanged.bind(this));
+    window.removeEventListener('open-profile-dropdown', this.handleOpenProfileDropdown.bind(this));
   }
 
   private async updateAuthState() {
@@ -1561,7 +2179,22 @@ export class ProfileDropdown extends LitElement {
         await checkTermsAcceptance();
       }
     } else {
-      this.user = null;
+      // Check if we have a username from the input field
+      const usernameInput = document.querySelector('username-input') as any;
+      const currentUsername = usernameInput?.getCurrentUsername?.() || localStorage.getItem('username');
+      
+      if (currentUsername && currentUsername !== 'Anon000') {
+        // Create a guest user object for display
+        this.user = {
+          id: 'guest-' + Date.now(),
+          username: currentUsername,
+          email: `${currentUsername}@guest.local`,
+          tier: 'free',
+          createdAt: new Date().toISOString()
+        };
+      } else {
+        this.user = null;
+      }
       this.profileData = null;
       this.error = null;
     }
@@ -1570,118 +2203,81 @@ export class ProfileDropdown extends LitElement {
   }
   
   private updatePosition() {
-    const authSection = document.querySelector('.auth-section-main') as HTMLElement;
-    
-    if (!authSection) return;
-    
-    // Always keep profile in main section above flag area, never move to header
-    if (this.parentElement !== authSection) {
-      authSection.appendChild(this);
-    }
-    
-    // Fix spacing issues
-    if (this.isLoggedIn) {
-      authSection.style.marginBottom = '20px';
-      authSection.style.textAlign = 'center';
-      authSection.style.display = 'block';
-    } else {
-      authSection.style.marginBottom = '20px';  
-      authSection.style.textAlign = 'center';
-      authSection.style.display = 'block';
-    }
+    // No need to update position anymore since profile is just a modal
   }
 
   render() {
-    if (!this.isLoggedIn) {
-      return html`
-        <div class="profile-section">
-          <div class="profile-logged-out">
-            <button 
-              class="auth-button auth-button--primary" 
-              @click=${this.handleSignIn}
-              @mouseenter=${(e: MouseEvent) => {
-                const btn = e.target as HTMLButtonElement;
-                btn.style.background = 'linear-gradient(135deg, #5a7f3a 0%, #4a6f2a 100%)';
-                btn.style.transform = 'translateY(-2px)';
-                btn.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.6), 0 0 30px rgba(90, 127, 58, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)';
-                btn.style.borderColor = '#6a8f4a';
-              }}
-              @mouseleave=${(e: MouseEvent) => {
-                const btn = e.target as HTMLButtonElement;
-                btn.style.background = 'linear-gradient(135deg, #4a5f3a 0%, #3a4f2a 100%)';
-                btn.style.transform = 'translateY(0)';
-                btn.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 -2px 0 rgba(0, 0, 0, 0.3)';
-                btn.style.borderColor = '#5a7f3a';
-              }}
-              style="
-                background: linear-gradient(135deg, #4a5f3a 0%, #3a4f2a 100%) !important;
-                color: #ffffff !important;
-                border: 2px solid #5a7f3a !important;
-                padding: 14px 36px !important;
-                font-size: 16px !important;
-                font-weight: 700 !important;
-                text-transform: uppercase !important;
-                letter-spacing: 1.5px !important;
-                border-radius: 8px !important;
-                cursor: pointer !important;
-                font-family: 'Courier New', monospace !important;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 -2px 0 rgba(0, 0, 0, 0.3) !important;
-                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8), 0 0 10px rgba(255, 255, 255, 0.1) !important;
-                position: relative !important;
-                overflow: hidden !important;
-                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-              "
-            >
-              ENLIST
-            </button>
-          </div>
-        </div>
-      `;
-    }
-
     // Check if this is a guest user
     const isGuest = this.user?.email?.endsWith('@guest.local') || false;
 
     return html`
-      <div class="profile-section">
-        <div class="profile-trigger" @click=${this.openProfile}>
-          <div class="profile-avatar">
-            ${this.user?.avatar ? html`
-              <img src=${this.user.avatar} alt="${this.user.username}" />
-            ` : html`
-              ${this.user?.username?.[0] || '?'}
-            `}
-          </div>
-          <span class="profile-username">${this.user?.username || 'Operative'}</span>
-        </div>
         
         <!-- Revolutionary Profile Interface -->
         <div class="profile-overlay ${this.isOpen ? 'active' : ''}" @click=${this.closeProfile}>
           <div class="profile-modal" @click=${(e: Event) => e.stopPropagation()}>
             <button class="close-button" @click=${this.closeProfile}>×</button>
             
-            <!-- Command Header -->
+            <!-- Clean Profile Header -->
             <div class="command-header">
-              <div class="operator-card">
-                <div class="operator-avatar">
-                  ${this.user?.avatar ? html`
-                    <img src=${this.user.avatar} alt="${this.user.username}" />
+              <div class="profile-header-content">
+                <!-- Square Flag with VIP-ready border -->
+                <div class="flag-square" @click=${this.toggleFlagPicker} title="Change flag">
+                  <div class="flag-square-border ${isGuest ? '' : 'authenticated'}">
+                    <div class="flag-square-inner">
+                      ${this.currentFlag ? html`
+                        <img src="/flags/${this.currentFlag}.svg" alt="${this.getFlagName(this.currentFlag)}" class="flag-image" />
+                      ` : html`
+                        <span class="flag-placeholder">?</span>
+                      `}
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- User Info -->
+                <div class="user-info-section">
+                  ${this.editingName ? html`
+                    <input
+                      type="text"
+                      class="operator-name-input"
+                      .value=${this.user?.username || ''}
+                      @input=${this.handleUsernameChange}
+                      @blur=${this.stopEditingName}
+                      @keydown=${this.handleNameKeydown}
+                      placeholder="Enter username"
+                      maxlength="20"
+                    />
                   ` : html`
-                    ${this.user?.username?.[0] || '?'}
+                    <div class="operator-name editable" @click=${this.startEditingName}>
+                      ${this.user?.username || 'UNKNOWN'}
+                      <span class="edit-icon">✏️</span>
+                    </div>
                   `}
-                </div>
-                <div class="operator-info">
-                  <div class="operator-rank">◤ ${isGuest ? 'GUEST OPERATIVE' : 'FIELD OPERATIVE'} ◥</div>
-                  <div class="operator-name">${this.user?.username || 'UNKNOWN'}</div>
-                  <div class="operator-designation">✦ ${isGuest ? 'TEMPORARY ACCESS' : 'SOVEREIGN LINES COMMAND'}</div>
-                </div>
-                <div class="clearance-badge">
-                  <div class="clearance-indicator"></div>
-                  <div class="clearance-level">LVL ${this.calculateLevel()}</div>
-                  <div class="clearance-status">${isGuest ? 'GUEST' : 'ACTIVE'}</div>
+                  <div class="user-level">Level ${this.calculateLevel()} ${isGuest ? '• Guest' : '• Active'}</div>
                 </div>
               </div>
             </div>
+
+            ${this.showFlagPicker ? html`
+              <div class="flag-picker-overlay" @click=${this.closeFlagPicker}>
+                <div class="flag-picker" @click=${(e: Event) => e.stopPropagation()}>
+                  <input
+                    type="text"
+                    class="flag-search"
+                    placeholder="Search countries..."
+                    @input=${this.handleFlagSearch}
+                    .value=${this.flagSearch}
+                  />
+                  <div class="flag-grid">
+                    ${this.getFilteredFlags().map(country => html`
+                      <div class="flag-option" @click=${() => this.selectFlag(country.code)}>
+                        <img src="/flags/${country.code}.svg" alt="${country.name}" />
+                        <span>${country.name}</span>
+                      </div>
+                    `)}
+                  </div>
+                </div>
+              </div>
+            ` : ''}
 
             <!-- Guest Warning Banner - Moved to top -->
             ${isGuest ? html`
@@ -1769,13 +2365,20 @@ export class ProfileDropdown extends LitElement {
     `;
   }
 
-  private openProfile() {
+  public openProfile() {
+    console.log('ProfileDropdown: openProfile() called, setting isOpen to true');
     this.isOpen = true;
+    this.requestUpdate(); // Force a re-render
     // Hide the main logo/banner when profile is open
     const header = document.querySelector('.l-header') as HTMLElement;
     if (header) {
       header.style.display = 'none';
     }
+  }
+
+  private handleOpenProfileDropdown() {
+    console.log('ProfileDropdown: Received open-profile-dropdown event');
+    this.openProfile();
   }
 
   private closeProfile() {
@@ -1880,6 +2483,84 @@ export class ProfileDropdown extends LitElement {
     // Force profile refresh to show new achievement
     if (this.user?.id) {
       this.loadProfileData(this.user.id);
+    }
+  }
+
+  /**
+   * Handle real-time username changes from UsernameInput
+   */
+  private handleUsernameChanged(event: CustomEvent) {
+    const { username, user } = event.detail;
+    console.log('Username changed to:', username);
+    
+    if (user) {
+      // Update user object with new username
+      this.user = { ...this.user, ...user };
+    } else if (this.user) {
+      // Just update the username
+      this.user = { ...this.user, username };
+    } else {
+      // Create a guest user object
+      this.user = {
+        id: 'guest-' + Date.now(),
+        username: username,
+        email: `${username}@guest.local`,
+        tier: 'free',
+        createdAt: new Date().toISOString()
+      };
+    }
+    
+    this.requestUpdate();
+  }
+
+  private startEditingName() {
+    this.editingName = true;
+    // Focus the input after render
+    setTimeout(() => {
+      const input = this.shadowRoot?.querySelector('.operator-name-input') as HTMLInputElement;
+      if (input) {
+        input.focus();
+        input.select();
+      }
+    }, 50);
+  }
+
+  private stopEditingName() {
+    this.editingName = false;
+  }
+
+  private async handleUsernameChange(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const newUsername = input.value.trim();
+    
+    if (newUsername && newUsername !== this.user?.username) {
+      // Update username in localStorage
+      localStorage.setItem('username', newUsername);
+      
+      // Update the user object
+      if (this.user) {
+        this.user = { ...this.user, username: newUsername };
+      }
+      
+      // Dispatch event to update username input component
+      window.dispatchEvent(new CustomEvent('username-changed', {
+        detail: { username: newUsername, user: this.user }
+      }));
+      
+      // Update username input component if it exists
+      const usernameInput = document.querySelector('username-input') as any;
+      if (usernameInput && usernameInput.updateUsername) {
+        usernameInput.updateUsername(newUsername);
+      }
+    }
+  }
+
+  private handleNameKeydown(event: KeyboardEvent) {
+    if (event.key === 'Enter') {
+      this.stopEditingName();
+    } else if (event.key === 'Escape') {
+      this.editingName = false;
+      this.requestUpdate();
     }
   }
 
@@ -2020,5 +2701,164 @@ export class ProfileDropdown extends LitElement {
         </div>
       </div>
     `;
+  }
+
+  // Handle username input in the profile modal
+  private async handleUsernameChange(e: Event) {
+    const input = e.target as HTMLInputElement;
+    const newUsername = input.value.trim();
+    
+    if (!newUsername) return;
+    
+    // Store username
+    localStorage.setItem('username', newUsername);
+    
+    // Update user object
+    if (this.user) {
+      this.user = { ...this.user, username: newUsername };
+      
+      // Update cached auth user
+      const currentUser = await authService.getCurrentUser();
+      if (currentUser) {
+        const updatedUser = { ...currentUser, username: newUsername };
+        localStorage.setItem('auth_user', JSON.stringify(updatedUser));
+      }
+    } else {
+      // Create guest user
+      this.user = {
+        id: 'guest-' + Date.now(),
+        username: newUsername,
+        email: `${newUsername}@guest.local`,
+        tier: 'free',
+        createdAt: new Date().toISOString()
+      };
+    }
+    
+    // Dispatch event for other components
+    window.dispatchEvent(new CustomEvent('username-changed', {
+      detail: { username: newUsername, user: this.user }
+    }));
+    
+    this.requestUpdate();
+  }
+
+  // Username editing methods
+  private startEditingName() {
+    this.editingName = true;
+    this.requestUpdate();
+    // Focus the input after render
+    setTimeout(() => {
+      const input = this.shadowRoot?.querySelector('.operator-name-input') as HTMLInputElement;
+      if (input) {
+        input.focus();
+        input.select();
+      }
+    }, 0);
+  }
+
+  private stopEditingName() {
+    this.editingName = false;
+    this.requestUpdate();
+  }
+
+  private handleNameKeydown(event: KeyboardEvent) {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      this.stopEditingName();
+    } else if (event.key === 'Escape') {
+      event.preventDefault();
+      // Reset to original value
+      const input = event.target as HTMLInputElement;
+      input.value = this.user?.username || '';
+      this.stopEditingName();
+    }
+  }
+
+  // Flag picker methods
+  private toggleFlagPicker() {
+    this.showFlagPicker = !this.showFlagPicker;
+  }
+
+  private closeFlagPicker() {
+    this.showFlagPicker = false;
+    this.flagSearch = '';
+  }
+
+  private handleFlagSearch(e: Event) {
+    const input = e.target as HTMLInputElement;
+    this.flagSearch = input.value.toLowerCase();
+  }
+
+  private getFilteredFlags() {
+    if (!this.flagSearch) {
+      return Countries;
+    }
+    
+    return Countries.filter(country => 
+      country.name.toLowerCase().includes(this.flagSearch) ||
+      country.code.toLowerCase().includes(this.flagSearch)
+    );
+  }
+
+  private getFlagName(code: string): string {
+    const country = Countries.find(c => c.code === code);
+    return country ? country.name : code.toUpperCase();
+  }
+
+  private selectFlag(code: string) {
+    this.currentFlag = code;
+    localStorage.setItem('flag', code);
+    this.closeFlagPicker();
+    
+    // Update the flag input if it exists
+    const flagInput = document.querySelector('flag-input') as any;
+    if (flagInput && flagInput.setFlag) {
+      flagInput.setFlag(code);
+    }
+    
+    // Dispatch flag change event
+    window.dispatchEvent(new CustomEvent('flag-changed', {
+      detail: { flag: code }
+    }));
+  }
+
+  private toggleFlagPicker() {
+    // Instead of showing our own flag picker, trigger the UsernameInput flag modal
+    const usernameInput = document.querySelector('username-input') as any;
+    if (usernameInput && usernameInput.openFlagModal) {
+      usernameInput.openFlagModal();
+    } else {
+      console.warn('UsernameInput component not found or openFlagModal method not available');
+    }
+  }
+
+  public openFlagPicker() {
+    // Use the same logic as toggleFlagPicker
+    this.toggleFlagPicker();
+  }
+
+  private closeFlagPicker() {
+    this.showFlagPicker = false;
+    this.flagSearch = '';
+  }
+
+  private handleFlagSearch(event: Event) {
+    const input = event.target as HTMLInputElement;
+    this.flagSearch = input.value;
+  }
+
+  private getFilteredFlags() {
+    if (!this.flagSearch) return Countries;
+    
+    const search = this.flagSearch.toLowerCase();
+    return Countries.filter(country => 
+      country.name.toLowerCase().includes(search) ||
+      country.code.toLowerCase().includes(search)
+    );
+  }
+
+  private getFlagName(code: string): string {
+    const country = Countries.find(c => c.code === code);
+    return country?.name || 'Unknown';
   }
 }

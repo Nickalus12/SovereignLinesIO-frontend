@@ -26,6 +26,7 @@ import { getUserMe, verifyClientToken } from "./jwt";
 import { logger } from "./Logger";
 import { PartyManager } from "./PartyManager";
 import { initWorkerMetrics } from "./WorkerMetrics";
+import flagGeneratorRoutes from "./routes/FlagGeneratorRoutes";
 
 const config = getServerConfigFromServer();
 
@@ -79,6 +80,22 @@ export function startWorker() {
   });
 
   app.set("trust proxy", 3);
+  
+  // Add CORS middleware for development
+  if (config.env() === GameEnv.Dev) {
+    app.use((req, res, next) => {
+      res.header('Access-Control-Allow-Origin', 'http://localhost:9000');
+      res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+      res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+      res.header('Access-Control-Allow-Credentials', 'true');
+      
+      if (req.method === 'OPTIONS') {
+        return res.sendStatus(200);
+      }
+      next();
+    });
+  }
+  
   app.use(express.json());
   app.use(express.static(path.join(__dirname, "../../out")));
   app.use(
@@ -87,6 +104,9 @@ export function startWorker() {
       max: 20, // 20 requests per IP per second
     }),
   );
+
+  // Add flag generator routes
+  app.use('/api/flags', flagGeneratorRoutes);
 
   app.post(
     "/api/create_game/:id",

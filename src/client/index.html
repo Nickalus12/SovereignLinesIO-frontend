@@ -375,6 +375,53 @@
       .component-hideable:has(> .parent-hidden) {
         display: none;
       }
+      
+      /* Additional mobile optimization styles */
+      @media (max-width: 640px) {
+        /* Improve touch targets for all buttons */
+        .container__row button,
+        .container__row o-button {
+          min-height: 44px;
+          font-size: 14px;
+        }
+        
+        /* Ensure proper spacing on mobile */
+        .container__row {
+          margin-bottom: 1rem;
+        }
+        
+        /* Profile section positioning */
+        .l-header__profile {
+          top: 10px !important;
+          right: 10px !important;
+        }
+        
+        /* Make settings button more accessible */
+        #settings-button {
+          bottom: 1rem !important;
+          right: 1rem !important;
+          width: 56px !important;
+          height: 56px !important;
+        }
+        
+        /* Ensure footer links are touch-friendly */
+        .l-footer__content a {
+          padding: 0.5rem;
+          display: inline-block;
+        }
+      }
+      
+      /* Prevent horizontal scroll on mobile */
+      @media (max-width: 768px) {
+        body {
+          overflow-x: hidden;
+        }
+        
+        .container {
+          width: 100%;
+          max-width: 100%;
+        }
+      }
     </style>
 
     <!-- Immediate execution to prevent FOUC -->
@@ -414,7 +461,7 @@
   </head>
 
   <body
-    class="h-full select-none font-sans min-h-screen bg-opacity-0 bg-cover bg-center bg-fixed transition-opacity duration-300 ease-in-out flex flex-col"
+    class="h-screen select-none font-sans bg-opacity-0 bg-cover bg-center bg-fixed transition-opacity duration-300 ease-in-out flex flex-col overflow-hidden"
   >
     <header class="l-header">
       <div class="l-header__content" style="position: relative;">
@@ -434,11 +481,11 @@
             width: 100%;
             max-width: 600px;
             height: 150%;
-            background-image: url('/images/MainMenuPerson.png');
+            background-image: url('../../resources/images/MainMenuPerson.png');
             background-size: contain;
             background-position: bottom center;
             background-repeat: no-repeat;
-            opacity: 0.008;
+            opacity: 0.15;
             pointer-events: none;
             z-index: 0;
             animation: personFloat 6s ease-in-out infinite;
@@ -459,7 +506,7 @@
               .main-menu-person {
                 height: 120%;
                 bottom: -10%;
-                opacity: 0.006 !important;
+                opacity: 0.12 !important;
               }
             }
             
@@ -467,7 +514,7 @@
               .main-menu-person {
                 height: 100%;
                 bottom: 0;
-                opacity: 0.004 !important;
+                opacity: 0.1 !important;
               }
             }
             
@@ -485,11 +532,11 @@
             
             .pixelated-text {
               font-family: 'Courier New', monospace;
-              font-size: clamp(2rem, 8vw, 4.5rem);
+              font-size: clamp(1rem, 2.5vw, 1.5rem);
               font-weight: bold;
               color: #4a5f3a;
               text-transform: uppercase;
-              letter-spacing: clamp(0.1rem, 2vw, 0.5rem);
+              letter-spacing: clamp(0.08rem, 1.5vw, 0.3rem);
               position: relative;
               animation: glitch 4s infinite;
               filter: contrast(1.5);
@@ -515,21 +562,21 @@
             
             @media (max-width: 640px) {
               .pixelated-text {
-                font-size: 2.5rem;
+                font-size: 2rem;
                 letter-spacing: 0.2rem;
               }
             }
             
             @media (max-width: 480px) {
               .pixelated-text {
-                font-size: 2rem;
+                font-size: 1.75rem;
                 letter-spacing: 0.15rem;
               }
             }
             
             @media (max-width: 380px) {
               .pixelated-text {
-                font-size: 1.75rem;
+                font-size: 1.5rem;
                 letter-spacing: 0.1rem;
               }
             }
@@ -540,7 +587,7 @@
             <div class="pixelated-text">SOVEREIGN LINES</div>
           </div>
         </div>
-        <div id="game-version" class="l-header__highlightText" style="color: #4a5f3a; font-weight: bold; font-size: 0.8em; text-transform: uppercase; letter-spacing: 2px; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);">
+        <div id="game-version" class="l-header__highlightText" style="color: #4a5f3a; font-weight: bold; font-size: 0.65em; text-transform: uppercase; letter-spacing: 1.5px; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8); margin-bottom: -2px;">
           Loading version...
         </div>
         <!-- Profile Section moved to header for logged-in users only -->
@@ -585,8 +632,8 @@
     
 
     <!-- Main container with responsive padding -->
-    <main class="flex justify-center flex-grow" style="position: relative; z-index: 1;">
-      <div class="container pt-12">
+    <main class="flex justify-center items-start flex-1 overflow-y-auto" style="position: relative; z-index: 1; min-height: 0; padding-top: 1rem;">
+      <div class="game-container" style="display: flex; flex-direction: column; gap: 0.4rem; padding: 0.5rem; width: 100%; max-width: 340px; margin: 0 auto; position: relative;">
         <o-button
           id="login-discord"
           title="Initializing..."
@@ -604,21 +651,18 @@
           style="display: none;"
         ></o-button>
 
-        <!-- Profile/Auth Section for non-logged in users -->
-        <div class="auth-section-main">
-          <profile-dropdown></profile-dropdown>
-        </div>
+        <!-- Profile Modal (hidden by default, opened when username is clicked) -->
+        <profile-dropdown style="position: fixed; z-index: 10000;"></profile-dropdown>
+        
+        <!-- AI Flag Generator Modal is now integrated into username-input component -->
 
-        <div class="container__row">
-          <flag-input class="w-[20%] md:w-[15%]"></flag-input>
-          <username-input class="relative w-full"></username-input>
-          <div id="subscription-button-container-inline" class="w-[20%] md:w-[15%] flex items-center justify-center">
-            <!-- Subscription button will be added here by JavaScript -->
+        <div class="flex justify-center items-center gap-1" style="margin: 0 auto; width: 100%; position: relative; z-index: 5;">
+          <div class="flex items-center gap-1" style="width: 100%;">
+            <username-input class="relative flex-1"></username-input>
+            <div id="subscription-button-container-inline" class="flex items-center justify-center flex-shrink-0" style="width: 65px;">
+              <!-- Subscription button will be added here by JavaScript -->
+            </div>
           </div>
-          <news-button
-            class="w-[20%] md:w-[15%] component-hideable"
-            style="display: none;"
-          ></news-button>
         </div>
         <div></div>
         <div>
@@ -662,27 +706,160 @@
           secondary
         ></o-button>
         
-        <party-system class="block"></party-system>
       </div>
     </main>
+    
+    <!-- Party System Component (hidden, will be opened via floating button) -->
+    <party-system style="display: none;"></party-system>
 
+    
+    <!-- Party Button -->
+    <button
+      id="party-button"
+      title="Party System"
+      class="fixed bottom-3 left-3 z-50 rounded-full p-2 shadow-lg transition-all duration-300 flex items-center justify-center party-glass-button"
+      style="width: 45px; height: 45px;"
+    >
+      <img
+        id="party-icon"
+        src="../../resources/party/chat-bubble-empty.svg"
+        alt="Party"
+        style="width: 28px; height: 28px"
+      />
+    </button>
     
     <!-- User Setting -->
     <button
       id="settings-button"
       title="Settings"
-      class="fixed bottom-4 right-4 z-50 rounded-full p-2 shadow-lg transition-all duration-300 flex items-center justify-center settings-glass-button"
-      style="width: 60px; height: 60px;"
+      class="fixed bottom-3 right-3 z-50 rounded-full p-2 shadow-lg transition-all duration-300 flex items-center justify-center settings-glass-button"
+      style="width: 45px; height: 45px;"
     >
       <img
         src="../../resources/images/settingsicon.svg"
         alt="Settings"
-        style="width: 48px; height: 48px"
+        style="width: 32px; height: 32px"
       />
     </button>
     
     <style>
-      /* TACTICAL COMMAND VIP BUTTON - Completely Redesigned */
+      /* Party Glass Button - Military Frosted Style */
+      .party-glass-button {
+        background: 
+          linear-gradient(135deg, rgba(74, 95, 58, 0.15) 0%, rgba(45, 59, 37, 0.2) 50%, rgba(26, 47, 26, 0.15) 100%),
+          linear-gradient(45deg, rgba(143, 188, 143, 0.05) 0%, transparent 100%);
+        backdrop-filter: blur(16px) saturate(180%);
+        -webkit-backdrop-filter: blur(16px) saturate(180%);
+        border: 2px solid rgba(143, 188, 143, 0.3);
+        box-shadow: 
+          0 8px 32px rgba(0, 0, 0, 0.4),
+          0 4px 16px rgba(74, 95, 58, 0.2),
+          inset 0 1px 0 rgba(255, 255, 255, 0.1),
+          inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+        position: fixed !important;
+        bottom: 1rem !important;
+        left: 1rem !important;
+        right: auto !important;
+        overflow: hidden;
+      }
+
+      .party-glass-button::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(143, 188, 143, 0.3), transparent);
+        transition: left 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      .party-glass-button:hover {
+        background: 
+          linear-gradient(135deg, rgba(90, 127, 58, 0.2) 0%, rgba(58, 79, 42, 0.3) 50%, rgba(45, 59, 37, 0.2) 100%),
+          linear-gradient(45deg, rgba(143, 188, 143, 0.1) 0%, transparent 100%);
+        border-color: rgba(143, 188, 143, 0.5);
+        transform: translateY(-2px) scale(1.05);
+        box-shadow: 
+          0 12px 40px rgba(0, 0, 0, 0.5),
+          0 6px 24px rgba(74, 95, 58, 0.3),
+          0 0 30px rgba(143, 188, 143, 0.2),
+          inset 0 1px 0 rgba(255, 255, 255, 0.15),
+          inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+      }
+
+      .party-glass-button:hover::before {
+        left: 100%;
+      }
+
+      .party-glass-button:active {
+        transform: translateY(0) scale(1.02);
+        box-shadow: 
+          0 4px 16px rgba(0, 0, 0, 0.4),
+          0 2px 8px rgba(74, 95, 58, 0.2),
+          inset 0 2px 4px rgba(0, 0, 0, 0.3);
+      }
+
+      /* Party icon glow effects */
+      .party-glass-button img {
+        filter: drop-shadow(0 0 8px rgba(143, 188, 143, 0.4));
+        transition: all 0.3s ease;
+      }
+
+      .party-glass-button:hover img {
+        filter: drop-shadow(0 0 12px rgba(143, 188, 143, 0.6)) brightness(1.1);
+      }
+
+      /* Party state animations */
+      .party-glass-button.has-party img {
+        filter: drop-shadow(0 0 12px rgba(255, 215, 0, 0.6)) brightness(1.2);
+      }
+
+      .party-glass-button.has-warning img {
+        filter: drop-shadow(0 0 12px rgba(255, 100, 100, 0.6)) brightness(1.2);
+        animation: warningPulse 2s ease-in-out infinite;
+      }
+
+      @keyframes warningPulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+      }
+
+      /* Notification dot */
+      .party-notification-dot {
+        position: absolute;
+        top: -2px;
+        right: -2px;
+        width: 12px;
+        height: 12px;
+        background: #ff4444;
+        border-radius: 50%;
+        border: 2px solid rgba(26, 47, 26, 0.8);
+        animation: notificationPulse 2s ease-in-out infinite;
+      }
+
+      @keyframes notificationPulse {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.2); opacity: 0.8; }
+      }
+      
+      /* Game container styles to prevent stretching */
+      .game-container o-button {
+        width: 100% !important;
+        max-width: none !important;
+      }
+      
+      .game-container .container__row {
+        width: 100%;
+        gap: 0.5rem;
+      }
+      
+      .game-container .container__row--equal > * {
+        flex: 1 1 0;
+        min-width: 0;
+      }
+      
+      /* TACTICAL COMMAND VIP BUTTON - Compact Version */
       .subscription-button {
         /* Military command terminal aesthetic */
         background: 
@@ -690,12 +867,12 @@
           repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(0, 255, 100, 0.03) 2px, rgba(0, 255, 100, 0.03) 4px);
         border: 1px solid #00ff64;
         border-radius: 4px;
-        padding: 0.8rem 1.4rem;
+        padding: 0.3rem 0.5rem;
         color: #00ff64;
         font-weight: 800;
-        font-size: 12px;
+        font-size: 9px;
         text-transform: uppercase;
-        letter-spacing: 2px;
+        letter-spacing: 1.5px;
         cursor: pointer;
         transition: all 0.2s ease;
         box-shadow: 
@@ -704,7 +881,7 @@
           inset 0 1px 0 rgba(0, 255, 100, 0.1);
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 6px;
         position: relative;
         overflow: hidden;
         width: 100%;
@@ -1469,24 +1646,25 @@
       <player-team-label></player-team-label>
     </div>
 
+    <!-- Responsive bottom UI container -->
     <div
-      class="bottom-0 w-full flex-col-reverse sm:flex-row z-50"
-      style="position: fixed; pointer-events: none"
+      class="fixed bottom-0 left-0 right-0 w-full flex flex-col z-50"
+      style="pointer-events: none"
     >
-      <div
-        class="w-full sm:w-2/3 sm:fixed sm:right-0 sm:bottom-0 sm:flex justify-end"
-        style="pointer-events: none"
-      >
-        <chat-display></chat-display>
-        <events-display></events-display>
-      </div>
-      <div class="w-full sm:w-1/3 md:max-w-72" style="pointer-events: auto">
+      <!-- Control panel centered at bottom -->
+      <div class="w-full order-2" style="pointer-events: auto">
         <control-panel></control-panel>
+      </div>
+      
+      <!-- Chat and events positioned above control panel on mobile -->
+      <div class="w-full order-1 flex justify-end gap-2 px-2 pb-2" style="pointer-events: auto">
+        <chat-display class="flex-shrink-0"></chat-display>
+        <events-display class="flex-shrink-0"></events-display>
       </div>
     </div>
 
     <!-- Footer section -->
-    <footer class="l-footer">
+    <footer class="l-footer flex-shrink-0">
       <div class="l-footer__content">
         <div class="l-footer__col">
           <a
@@ -1555,6 +1733,8 @@
     <account-settings-modal></account-settings-modal>
     <password-reset-modal></password-reset-modal>
     <terms-acceptance-modal></terms-acceptance-modal>
+    
+    <!-- Flag creator modal is already included above with id="flag-creator" -->
     <emoji-table></emoji-table>
     <leader-board></leader-board>
     <build-menu></build-menu>
@@ -1597,6 +1777,119 @@
         });
       });
       
+      // Flag Generator Integration
+      document.addEventListener('DOMContentLoaded', function() {
+        // Flag generator is now integrated into username-input component
+        // Listen for flag generation events
+        document.addEventListener('flag-generated', function(event) {
+          const usernameInput = document.querySelector('username-input');
+          if (usernameInput && event.detail?.flag) {
+            // Trigger refresh of custom flags in flag input
+            if (usernameInput.loadCustomFlags) {
+              usernameInput.loadCustomFlags();
+            }
+          }
+        });
+        
+        // Party Button Functionality
+        const partyButton = document.getElementById('party-button');
+        const partyIcon = document.getElementById('party-icon');
+        const partySystem = document.querySelector('party-system');
+        let isPartyModalOpen = false;
+        
+        if (partyButton && partySystem) {
+          // Handle party button click
+          partyButton.addEventListener('click', function() {
+            isPartyModalOpen = !isPartyModalOpen;
+            if (isPartyModalOpen) {
+              // Show party modal
+              partySystem.style.display = 'block';
+              partySystem.isExpanded = true;
+              
+              // Create backdrop
+              const backdrop = document.createElement('div');
+              backdrop.id = 'party-modal-backdrop';
+              backdrop.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.5);
+                backdrop-filter: blur(4px);
+                z-index: 40;
+              `;
+              backdrop.addEventListener('click', function() {
+                closePartyModal();
+              });
+              document.body.appendChild(backdrop);
+              
+              // Position party modal
+              partySystem.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                z-index: 45;
+                max-width: 90vw;
+                max-height: 90vh;
+                overflow-y: auto;
+              `;
+            } else {
+              closePartyModal();
+            }
+          });
+          
+          function closePartyModal() {
+            isPartyModalOpen = false;
+            partySystem.style.display = 'none';
+            partySystem.isExpanded = false;
+            const backdrop = document.getElementById('party-modal-backdrop');
+            if (backdrop) {
+              backdrop.remove();
+            }
+          }
+          
+          // Listen for party state changes
+          function updatePartyIcon() {
+            if (!partySystem || !partyIcon || !partyButton) return;
+            
+            const isInParty = partySystem.isInParty;
+            const hasWarning = partySystem.hostActivity === 'in-game' || partySystem.errorMessage;
+            
+            // Update icon based on state
+            if (hasWarning && isInParty) {
+              partyIcon.src = '../../resources/party/bubble-warning.svg';
+              partyButton.classList.add('has-warning');
+              partyButton.classList.remove('has-party');
+            } else if (isInParty) {
+              partyIcon.src = '../../resources/party/bubble-star.svg';
+              partyButton.classList.remove('has-warning');
+              partyButton.classList.add('has-party');
+            } else {
+              partyIcon.src = '../../resources/party/chat-bubble-empty.svg';
+              partyButton.classList.remove('has-warning', 'has-party');
+            }
+          }
+          
+          // Monitor party system for changes
+          const observer = new MutationObserver(updatePartyIcon);
+          observer.observe(partySystem, { 
+            attributes: true, 
+            childList: true, 
+            subtree: true 
+          });
+          
+          // Initial icon update
+          updatePartyIcon();
+          
+          // Listen for party events
+          window.addEventListener('party-state-changed', updatePartyIcon);
+          window.addEventListener('party-joined', updatePartyIcon);
+          window.addEventListener('party-left', updatePartyIcon);
+          window.addEventListener('party-error', updatePartyIcon);
+        }
+      });
     </script>
 
     <!-- Player Profile Modal -->

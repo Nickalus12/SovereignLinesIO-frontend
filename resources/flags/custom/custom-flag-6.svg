@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="150" height="100" viewBox="0 0 150 100">
+  <defs>
+    <radialGradient id="galaxyCore">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
+      <stop offset="20%" style="stop-color:#ffccff;stop-opacity:0.8" />
+      <stop offset="50%" style="stop-color:#9933ff;stop-opacity:0.6" />
+      <stop offset="100%" style="stop-color:#330066;stop-opacity:0" />
+    </radialGradient>
+    <filter id="blur">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="1" />
+    </filter>
+  </defs>
+  
+  <!-- Space background -->
+  <rect width="150" height="100" fill="#000011"/>
+  
+  <!-- Star field -->
+  <g opacity="0.7">
+    <circle cx="10" cy="15" r="0.5" fill="white"/>
+    <circle cx="25" cy="40" r="0.7" fill="white"/>
+    <circle cx="40" cy="20" r="0.5" fill="white"/>
+    <circle cx="60" cy="30" r="0.8" fill="white"/>
+    <circle cx="80" cy="15" r="0.5" fill="white"/>
+    <circle cx="100" cy="35" r="0.6" fill="white"/>
+    <circle cx="120" cy="25" r="0.5" fill="white"/>
+    <circle cx="140" cy="45" r="0.7" fill="white"/>
+    <circle cx="15" cy="80" r="0.5" fill="white"/>
+    <circle cx="135" cy="85" r="0.6" fill="white"/>
+  </g>
+  
+  <!-- Galaxy spiral -->
+  <ellipse cx="75" cy="50" rx="40" ry="30" fill="url(#galaxyCore)" transform="rotate(30 75 50)" filter="url(#blur)"/>
+  
+  <!-- Spiral arms -->
+  <path d="M75,50 Q95,45 100,35 Q90,40 85,45 Q80,48 75,50" fill="none" stroke="#ffccff" stroke-width="2" opacity="0.5" filter="url(#blur)"/>
+  <path d="M75,50 Q55,55 50,65 Q60,60 65,55 Q70,52 75,50" fill="none" stroke="#ffccff" stroke-width="2" opacity="0.5" filter="url(#blur)"/>
+  
+  <!-- Central star system -->
+  <circle cx="75" cy="50" r="5" fill="#ffffff" opacity="0.9"/>
+  <circle cx="75" cy="50" r="8" fill="none" stroke="#ffff00" stroke-width="0.5" opacity="0.7"/>
+  
+  <!-- Orbiting planets -->
+  <circle cx="85" cy="50" r="2" fill="#0099ff"/>
+  <circle cx="68" cy="45" r="1.5" fill="#ff6600"/>
+  <circle cx="75" cy="60" r="1" fill="#00ff00"/>
+  
+
+</svg>
